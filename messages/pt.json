@@ -1,0 +1,35 @@
+{
+  "Index": {
+    "title": "OrganizeKids - Organize Your Family Life",
+    "description": "Help your family stay organized with tasks, rewards, and household management."
+  },
+  "SignIn": {
+    "title": "SIGN IN",
+    "subtitle": "Sign in with email address",
+    "emailPlaceholder": "Yourname@gmail.com", 
+    "signUpButton": "Sign up",
+    "orContinueWith": "Or continue with",
+    "google": "Google",
+    "facebook": "Facebook",
+    "terms": "By registering you with our Terms and Conditions",
+    "welcomeMessage": "SIGN IN TO HAVE YOUR GOALS ACHIEVED DAILY!"
+  },
+  "Dashboard": {
+    "welcome": "Welcome back, {{name}}!",
+    "subtitle": "Manage your family's organization and tasks",
+    "households": "Households",
+    "members": "Family Members", 
+    "tasks": "Active Tasks",
+    "points": "Total Points",
+    "signOut": "Sign Out",
+    "createHousehold": "Create First Household",
+    "learnMore": "Learn More"
+  },
+  "Navigation": {
+    "dashboard": "Dashboard",
+    "households": "Households",
+    "tasks": "Tasks",
+    "members": "Members",
+    "profile": "Profile"
+  }
+}
