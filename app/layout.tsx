@@ -1,9 +1,13 @@
 import { Providers } from '@/components/providers'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const poppins = Poppins({ 
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'OrganizeKids - Organize Your Family Life',
@@ -26,7 +30,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={poppins.className}>
         <Providers>
           {children}
         </Providers>
