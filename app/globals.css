@@ -4,6 +4,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom background class */
+.space-background {
+  background-image: url('/space-background-new.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  width: 100%;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -52,12 +62,11 @@
 
   body {
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #000;
+    background: #160430;
     margin: 0;
     padding: 0;
+    overflow-x: auto;
+    overflow-y: auto;
   }
 }
 
@@ -72,7 +81,14 @@
 
 /* Space theme specific styles */
 .space-background {
-  background: linear-gradient(135deg, #1a0b3d 0%, #4c1d95 25%, #1e40af 50%, #0891b2 75%, #0d9488 100%);
+  background: linear-gradient(
+    135deg,
+    #1a0b3d 0%,
+    #4c1d95 25%,
+    #1e40af 50%,
+    #0891b2 75%,
+    #0d9488 100%
+  );
   position: relative;
   overflow: hidden;
 }
@@ -84,12 +100,28 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
+  background-image:
     radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
-    radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1px 1px at 90px 40px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.4), transparent),
-    radial-gradient(2px 2px at 160px 30px, rgba(255,255,255,0.7), transparent);
+    radial-gradient(
+      2px 2px at 40px 70px,
+      rgba(255, 255, 255, 0.8),
+      transparent
+    ),
+    radial-gradient(
+      1px 1px at 90px 40px,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    ),
+    radial-gradient(
+      1px 1px at 130px 80px,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    ),
+    radial-gradient(
+      2px 2px at 160px 30px,
+      rgba(255, 255, 255, 0.7),
+      transparent
+    );
   background-repeat: repeat;
   background-size: 200px 100px;
   animation: floating 20s linear infinite;
@@ -105,7 +137,11 @@
 .planet-large {
   width: 300px;
   height: 300px;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.6) 0%, rgba(59, 130, 246, 0.4) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(14, 165, 233, 0.6) 0%,
+    rgba(59, 130, 246, 0.4) 100%
+  );
   top: -100px;
   left: -100px;
   animation: floating 15s ease-in-out infinite;
@@ -114,7 +150,11 @@
 .planet-medium {
   width: 150px;
   height: 150px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.5) 0%, rgba(99, 102, 241, 0.3) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.5) 0%,
+    rgba(99, 102, 241, 0.3) 100%
+  );
   bottom: 50px;
   right: -50px;
   animation: floating 20s ease-in-out infinite reverse;
@@ -123,7 +163,11 @@
 .planet-small {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.4) 0%, rgba(5, 150, 105, 0.3) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.4) 0%,
+    rgba(5, 150, 105, 0.3) 100%
+  );
   top: 200px;
   right: 200px;
   animation: floating 12s ease-in-out infinite;
