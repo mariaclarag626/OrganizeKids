@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     'Help your family stay organized with tasks, rewards, and household management.',
   keywords: ['family', 'organization', 'kids', 'tasks', 'rewards', 'household'],
   authors: [{ name: 'OrganizeKids Team' }],
+  viewport: 'width=device-width, initial-scale=1',
   openGraph: {
     title: 'OrganizeKids - Organize Your Family Life',
     description:

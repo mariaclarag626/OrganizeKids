@@ -18,23 +18,23 @@ export default function SignUpPage() {
       <div 
         className='absolute inset-0 w-full h-full'
         style={{
-          background: 'linear-gradient(135deg, rgba(22, 4, 48, 0.6) 0%, rgba(76, 29, 149, 0.5) 25%, rgba(147, 51, 234, 0.4) 50%, rgba(168, 85, 247, 0.6) 75%, rgba(196, 181, 253, 0.8) 100%)',
+          background: 'linear-gradient(135deg, rgba(27, 3, 55, 0.6) 0%, rgba(27, 3, 55, 0.5) 25%, rgba(18, 3, 38, 0.4) 50%, rgba(18, 3, 38, 0.6) 75%, rgba(18, 3, 38, 0.8) 100%)',
         }}
       />
 
       {/* Content Container */}
-      <div className='relative z-10 min-h-screen flex'>
+      <div className='relative z-10 min-h-screen flex flex-col lg:flex-row'>
         {/* Left side - Logo and inspiring text */}
-        <div className='w-full lg:w-1/2 flex flex-col justify-between p-8'>
+        <div className='w-full lg:w-1/2 flex flex-col justify-between p-4 sm:p-6 lg:p-8'>
           {/* Logo/Brand */}
-          <div className='mb-8'>
-            <div className='text-white font-bold text-3xl drop-shadow-lg'>OrganizeKids</div>
+          <div className='mb-4 lg:mb-8'>
+            <div className='text-white font-bold text-2xl sm:text-3xl drop-shadow-lg'>OrganizeKids</div>
           </div>
 
           {/* Inspiring text */}
-          <div className='mb-16'>
+          <div className='mb-8 lg:mb-16 text-center lg:text-left'>
             <h2 
-              className='text-white font-bold text-5xl mb-6 drop-shadow-lg'
+              className='text-white font-bold text-3xl sm:text-4xl lg:text-5xl mb-4 lg:mb-6 drop-shadow-lg'
               style={{
                 fontFamily: 'Poppins',
                 lineHeight: '1.1',
@@ -43,30 +43,30 @@ export default function SignUpPage() {
               SIGN IN TO HAVE YOUR<br />
               GOALS ACHIEVED DAILY!
             </h2>
-            <p className='text-white/90 text-xl drop-shadow-md max-w-md'>
+            <p className='text-white/90 text-lg sm:text-xl drop-shadow-md max-w-md mx-auto lg:mx-0'>
               Join thousands of families organizing their lives better every day
             </p>
           </div>
         </div>
 
         {/* Right side - Form with white background */}
-        <div className='w-full lg:w-1/2 flex items-center justify-center p-8'>
-          <div className='w-full max-w-lg bg-white/10 backdrop-blur-md rounded-2xl p-10 shadow-2xl border-2 border-white/80'>
+        <div className='w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-8'>
+          <div className='w-full max-w-lg bg-white/10 backdrop-blur-md rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl border-2 border-white/80'>
             {/* Back button */}
             <button
-              className='mb-8 flex items-center text-white hover:text-white/80 transition-colors'
+              className='mb-6 lg:mb-8 flex items-center text-white hover:text-white/80 transition-colors'
               onClick={() => window.location.href = '/'}
             >
-              <svg className='w-5 h-5 mr-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <svg className='w-4 h-4 sm:w-5 sm:h-5 mr-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                 <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
               </svg>
-              Back
+              <span className='text-sm sm:text-base'>Back</span>
             </button>
 
             {/* Header */}
-            <div className='mb-8'>
-              <h1 className='text-3xl font-bold text-white mb-2'>SIGN UP</h1>
-              <p className='text-white/80'>
+            <div className='mb-6 lg:mb-8 text-center lg:text-left'>
+              <h1 className='text-2xl sm:text-3xl font-bold text-white mb-2'>SIGN UP</h1>
+              <p className='text-white/80 text-sm sm:text-base'>
                 Already have an account?{' '}
                 <button
                   className='text-blue-300 hover:text-blue-200 font-medium underline'
@@ -78,14 +78,14 @@ export default function SignUpPage() {
             </div>
 
             {/* Form */}
-            <form className='space-y-6'>
+            <form className='space-y-4 sm:space-y-6'>
               {/* Full Name */}
               <div>
                 <input
                   id='fullName'
                   type='text'
                   placeholder='Full Name'
-                  className='w-full px-4 py-3 border-2 border-white/30 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/20 placeholder:text-white/70 text-white'
+                  className='w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-white/30 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/20 placeholder:text-white/70 text-white text-sm sm:text-base'
                   style={{
                     fontFamily: 'Poppins',
                   }}
@@ -164,7 +164,7 @@ export default function SignUpPage() {
                 type='button'
                 className='w-full py-3 px-4 text-white font-semibold rounded-lg transition-all hover:opacity-90 flex items-center justify-center'
                 style={{
-                  background: 'linear-gradient(90deg, #7C3AED 0%, #3B82F6 100%)',
+                  background: 'linear-gradient(90deg, #1B0337 0%, #120326 100%)',
                   fontFamily: 'Poppins',
                 }}
                 onClick={() => window.location.href = '/who-is-using'}
