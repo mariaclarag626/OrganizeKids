@@ -216,9 +216,12 @@ export default function DashboardPage() {
               onClick={() => setActiveTab('todo')}
               className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all ${
                 activeTab === 'todo'
-                  ? 'bg-white/20 text-white shadow-lg'
+                  ? 'text-white shadow-lg'
                   : 'text-white/70 hover:text-white'
               }`}
+              style={activeTab === 'todo' ? {
+                background: 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 50%, #94D6E8 100%)'
+              } : {}}
             >
               To-Do List
             </button>
@@ -226,9 +229,12 @@ export default function DashboardPage() {
               onClick={() => setActiveTab('routine')}
               className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all ${
                 activeTab === 'routine'
-                  ? 'bg-white/20 text-white shadow-lg'
+                  ? 'text-white shadow-lg'
                   : 'text-white/70 hover:text-white'
               }`}
+              style={activeTab === 'routine' ? {
+                background: 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 50%, #94D6E8 100%)'
+              } : {}}
             >
               Routine
             </button>
@@ -236,9 +242,12 @@ export default function DashboardPage() {
               onClick={() => setActiveTab('progress')}
               className={`flex-1 py-3 px-4 rounded-xl text-sm font-medium transition-all ${
                 activeTab === 'progress'
-                  ? 'bg-white/20 text-white shadow-lg'
+                  ? 'text-white shadow-lg'
                   : 'text-white/70 hover:text-white'
               }`}
+              style={activeTab === 'progress' ? {
+                background: 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 50%, #94D6E8 100%)'
+              } : {}}
             >
               Graphics/Progress
             </button>
