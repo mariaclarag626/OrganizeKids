@@ -217,13 +217,12 @@ export default function DashboardPage() {
                       value={newTask.time.split(':')[0] || ''}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, '').slice(0, 2);
-                        const hours = value.padStart(2, '0');
-                        const minutes = newTask.time.split(':')[1] || '00';
-                        setNewTask({ ...newTask, time: `${hours}:${minutes}` });
+                        const currentMinutes = newTask.time.split(':')[1] || '';
+                        setNewTask({ ...newTask, time: `${value}:${currentMinutes}` });
                       }}
                       placeholder="00"
                       maxLength={2}
-                      className='w-8 bg-transparent text-white text-sm text-center focus:outline-none placeholder:text-white/50'
+                      className='w-12 bg-transparent text-white text-sm text-center focus:outline-none placeholder:text-white/50'
                     />
                     <span className='text-white font-bold'>:</span>
                     <input
@@ -231,13 +230,12 @@ export default function DashboardPage() {
                       value={newTask.time.split(':')[1] || ''}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, '').slice(0, 2);
-                        const minutes = value.padStart(2, '0');
-                        const hours = newTask.time.split(':')[0] || '00';
-                        setNewTask({ ...newTask, time: `${hours}:${minutes}` });
+                        const currentHours = newTask.time.split(':')[0] || '';
+                        setNewTask({ ...newTask, time: `${currentHours}:${value}` });
                       }}
                       placeholder="00"
                       maxLength={2}
-                      className='w-8 bg-transparent text-white text-sm text-center focus:outline-none placeholder:text-white/50'
+                      className='w-12 bg-transparent text-white text-sm text-center focus:outline-none placeholder:text-white/50'
                     />
                   </div>
                 </div>
