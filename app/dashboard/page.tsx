@@ -127,16 +127,76 @@ export default function DashboardPage() {
                 </button>
                 
                 {showDatePicker && (
-                  <div className='absolute top-full mt-2 left-0 w-full bg-purple-900/95 backdrop-blur-md rounded-2xl border border-white/20 p-4 shadow-xl z-10'>
-                    <input
-                      type="date"
-                      value={newTask.date}
-                      onChange={(e) => {
-                        setNewTask({ ...newTask, date: e.target.value })
-                        setShowDatePicker(false)
-                      }}
-                      className='w-full bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50'
-                    />
+                  <div className='absolute top-full mt-2 left-0 w-80 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 shadow-xl z-10'>
+                    {/* Calendar Header */}
+                    <div className='flex items-center justify-between mb-4'>
+                      <button className='p-1 hover:bg-white/10 rounded-lg transition-all'>
+                        <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+                        </svg>
+                      </button>
+                      <h3 className='text-white font-semibold text-lg'>March</h3>
+                      <button className='p-1 hover:bg-white/10 rounded-lg transition-all'>
+                        <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    {/* Days of Week */}
+                    <div className='grid grid-cols-7 gap-1 mb-2'>
+                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                        <div key={index} className='text-center text-white/60 text-sm font-medium py-2'>
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Calendar Days */}
+                    <div className='grid grid-cols-7 gap-1'>
+                      {/* Previous month days (grayed out) */}
+                      {[28, 29].map((day) => (
+                        <button key={`prev-${day}`} className='h-10 text-white/30 text-sm hover:bg-white/5 rounded-lg transition-all'>
+                          {day}
+                        </button>
+                      ))}
+                      
+                      {/* Current month days */}
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => {
+                        const isToday = day === 15; // Example: 15th is today
+                        const isSelected = day >= 10 && day <= 16; // Example: range selection
+                        
+                        return (
+                          <button
+                            key={day}
+                            onClick={() => {
+                              const selectedDate = `2024-03-${day.toString().padStart(2, '0')}`;
+                              setNewTask({ ...newTask, date: selectedDate });
+                              setShowDatePicker(false);
+                            }}
+                            className={`h-10 text-sm rounded-lg transition-all font-medium ${
+                              isSelected
+                                ? 'text-white shadow-lg'
+                                : isToday
+                                ? 'bg-white/20 text-white'
+                                : 'text-white/80 hover:bg-white/10'
+                            }`}
+                            style={isSelected ? {
+                              background: 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 50%, #94D6E8 100%)'
+                            } : {}}
+                          >
+                            {day}
+                          </button>
+                        );
+                      })}
+                      
+                      {/* Next month days (grayed out) */}
+                      {[1, 2, 3, 4].map((day) => (
+                        <button key={`next-${day}`} className='h-10 text-white/30 text-sm hover:bg-white/5 rounded-lg transition-all'>
+                          {day}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
