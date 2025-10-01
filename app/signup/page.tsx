@@ -43,7 +43,7 @@ export default function SignUpPage() {
 
         {/* Right side - Form with white background */}
         <div className='w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-8'>
-          <div className='w-full max-w-lg bg-white/10 backdrop-blur-md rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl border-2 border-white/80'>
+          <div className='w-full max-w-lg bg-white/5 backdrop-blur-sm rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl border-2 border-white/60'>
             {/* Back button */}
             <button
               className='mb-6 lg:mb-8 flex items-center text-white hover:text-white/80 transition-colors'
@@ -77,7 +77,7 @@ export default function SignUpPage() {
                   id='fullName'
                   type='text'
                   placeholder='Full Name'
-                  className='w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-white/30 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/20 placeholder:text-white/70 text-white text-sm sm:text-base'
+                  className='w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-white/25 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/10 placeholder:text-white/70 text-white text-sm sm:text-base'
                   style={{
                     fontFamily: 'Poppins',
                   }}
@@ -90,7 +90,7 @@ export default function SignUpPage() {
                   id='email'
                   type='email'
                   placeholder='Email address'
-                  className='w-full px-4 py-3 border-2 border-white/30 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/20 placeholder:text-white/70 text-white'
+                  className='w-full px-4 py-3 border-2 border-white/25 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/10 placeholder:text-white/70 text-white'
                   style={{
                     fontFamily: 'Poppins',
                   }}
@@ -118,7 +118,7 @@ export default function SignUpPage() {
                   id='password'
                   type='password'
                   placeholder='Password'
-                  className='w-full px-4 py-3 border-2 border-white/30 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/20 placeholder:text-white/70 text-white'
+                  className='w-full px-4 py-3 border-2 border-white/25 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/10 placeholder:text-white/70 text-white'
                   style={{
                     fontFamily: 'Poppins',
                   }}
@@ -131,7 +131,7 @@ export default function SignUpPage() {
                   id='confirmPassword'
                   type='password'
                   placeholder='Confirm your password'
-                  className='w-full px-4 py-3 border-2 border-white/30 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/20 placeholder:text-white/70 text-white'
+                  className='w-full px-4 py-3 border-2 border-white/25 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/10 placeholder:text-white/70 text-white'
                   style={{
                     fontFamily: 'Poppins',
                   }}
@@ -143,7 +143,7 @@ export default function SignUpPage() {
                 <input
                   id='terms'
                   type='checkbox'
-                  className='mt-1 w-4 h-4 text-purple-600 border-white/30 bg-white/20 rounded focus:ring-white/50 focus:ring-2'
+                  className='mt-1 w-4 h-4 text-purple-600 border-white/25 bg-white/10 rounded focus:ring-white/50 focus:ring-2'
                 />
                 <label htmlFor='terms' className='text-sm text-white/80'>
                   By registering you agree to our{' '}
