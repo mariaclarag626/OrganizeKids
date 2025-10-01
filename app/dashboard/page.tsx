@@ -29,6 +29,7 @@ export default function DashboardPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth())
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  const [historyFilter, setHistoryFilter] = useState('Mensal')
 
   const handleAddTask = () => {
     if (!newTask.title.trim()) return
@@ -541,8 +542,418 @@ export default function DashboardPage() {
           )}
 
           {activeTab === 'progress' && (
-            <div className='flex items-center justify-center h-64'>
-              <p className='text-white/70 text-lg'>Graphics/Progress content will be styled later</p>
+            <div className='space-y-6'>
+              {/* 1. Progresso Diário de Tarefas - Donut Chart Gamificado */}
+              <div className='bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20'>
+                <h3 className='text-white font-semibold mb-6'>Progresso Diário</h3>
+                <div className='flex justify-center'>
+                  <div className='relative w-40 h-40'>
+                    {/* Donut Chart */}
+                    <svg className='w-40 h-40 transform -rotate-90' viewBox='0 0 160 160'>
+                      {/* Inner background circle */}
+                      <circle
+                        cx='80'
+                        cy='80'
+                        r='60'
+                        fill='#1E0C3A'
+                      />
+                      {/* Outer track (not completed) */}
+                      <circle
+                        cx='80'
+                        cy='80'
+                        r='70'
+                        stroke='#5D5A72'
+                        strokeWidth='20'
+                        fill='transparent'
+                        opacity='0.6'
+                      />
+                      {/* Progress circle */}
+                      <circle
+                        cx='80'
+                        cy='80'
+                        r='70'
+                        stroke='url(#dailyProgressGradient)'
+                        strokeWidth='20'
+                        fill='transparent'
+                        strokeDasharray={`${2 * Math.PI * 70}`}
+                        strokeDashoffset={`${2 * Math.PI * 70 * (1 - (() => {
+                          const todayTasks = tasks.filter(task => {
+                            if (!task.date) return !task.date;
+                            const taskDate = new Date(task.date);
+                            const today = new Date();
+                            return taskDate.toDateString() === today.toDateString();
+                          });
+                          return todayTasks.length > 0 ? todayTasks.filter(t => t.completed).length / todayTasks.length : 0;
+                        })())}`}
+                        className='transition-all duration-1000 drop-shadow-lg'
+                        style={{
+                          filter: (() => {
+                            const todayTasks = tasks.filter(task => {
+                              if (!task.date) return !task.date;
+                              const taskDate = new Date(task.date);
+                              const today = new Date();
+                              return taskDate.toDateString() === today.toDateString();
+                            });
+                            const completionRate = todayTasks.length > 0 ? todayTasks.filter(t => t.completed).length / todayTasks.length : 0;
+                            return completionRate === 1 ? 'drop-shadow(0 0 20px #46B9FF) brightness(1.3)' : 'none';
+                          })()
+                        }}
+                      />
+                      {/* Gradient definition */}
+                      <defs>
+                        <linearGradient id='dailyProgressGradient' x1='0%' y1='0%' x2='100%' y2='0%'>
+                          <stop offset='0%' stopColor='#46B9FF' />
+                          <stop offset='100%' stopColor='#A07CFF' />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                    {/* Center text */}
+                    <div className='absolute inset-0 flex items-center justify-center'>
+                      <div className='text-center'>
+                        <div className='text-3xl font-bold text-white'>
+                          {(() => {
+                            const todayTasks = tasks.filter(task => {
+                              if (!task.date) return !task.date;
+                              const taskDate = new Date(task.date);
+                              const today = new Date();
+                              return taskDate.toDateString() === today.toDateString();
+                            });
+                            return todayTasks.length > 0 ? Math.round((todayTasks.filter(t => t.completed).length / todayTasks.length) * 100) : 0;
+                          })()}%
+                        </div>
+                        <div className='text-white/70 text-xs'>Concluído</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Tarefas Concluídas x Pendentes do Dia - Barras Horizontais */}
+              <div className='bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20'>
+                <h3 className='text-white font-semibold mb-6'>Tarefas de Hoje</h3>
+                <div className='space-y-4'>
+                  {(() => {
+                    const todayTasks = tasks.filter(task => {
+                      if (!task.date) return !task.date;
+                      const taskDate = new Date(task.date);
+                      const today = new Date();
+                      return taskDate.toDateString() === today.toDateString();
+                    });
+                    const completed = todayTasks.filter(t => t.completed).length;
+                    const pending = todayTasks.length - completed;
+                    const maxValue = Math.max(completed, pending, 1);
+                    
+                    return (
+                      <>
+                        {/* Concluídas */}
+                        <div className='space-y-2'>
+                          <div className='flex justify-between items-center'>
+                            <span className='text-white text-sm'>Concluídas</span>
+                            <span className='text-white font-bold'>{completed}</span>
+                          </div>
+                          <div className='w-full bg-gray-700/30 rounded-full h-4'>
+                            <div 
+                              className='h-4 rounded-full transition-all duration-1000'
+                              style={{
+                                width: `${(completed / maxValue) * 100}%`,
+                                background: 'linear-gradient(90deg, #3EF2A3 0%, #2DD4BF 100%)',
+                                boxShadow: '0 0 10px rgba(62, 242, 163, 0.4)'
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                        
+                        {/* Pendentes */}
+                        <div className='space-y-2'>
+                          <div className='flex justify-between items-center'>
+                            <span className='text-white text-sm'>Pendentes</span>
+                            <span className='text-white font-bold'>{pending}</span>
+                          </div>
+                          <div className='w-full bg-gray-700/30 rounded-full h-4'>
+                            <div 
+                              className='h-4 rounded-full transition-all duration-1000'
+                              style={{
+                                width: `${(pending / maxValue) * 100}%`,
+                                background: 'linear-gradient(90deg, #FF82C8 0%, #F472B6 100%)',
+                                boxShadow: '0 0 10px rgba(255, 130, 200, 0.4)'
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* 3. Tendência Semanal - Linha com Pontos */}
+              <div className='bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20'>
+                <h3 className='text-white font-semibold mb-6'>Tendência Semanal</h3>
+                <div className='relative h-32'>
+                  <svg className='w-full h-full' viewBox='0 0 400 120'>
+                    {/* Grid lines */}
+                    {[0, 25, 50, 75, 100].map(y => (
+                      <line 
+                        key={y} 
+                        x1='40' 
+                        y1={100 - y * 0.6} 
+                        x2='380' 
+                        y2={100 - y * 0.6} 
+                        stroke='rgba(255,255,255,0.1)' 
+                        strokeWidth='1'
+                      />
+                    ))}
+                    
+                    {/* Line chart */}
+                    <defs>
+                      <linearGradient id='weeklyGradient' x1='0%' y1='0%' x2='0%' y2='100%'>
+                        <stop offset='0%' stopColor='#46B9FF' stopOpacity='0.3' />
+                        <stop offset='100%' stopColor='#46B9FF' stopOpacity='0' />
+                      </linearGradient>
+                    </defs>
+                    
+                    {(() => {
+                      const weekDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+                      const weekData = [85, 92, 78, 95, 88, 90, 82]; // Mock data
+                      const points = weekData.map((value, index) => ({
+                        x: 60 + (index * 45),
+                        y: 100 - (value * 0.6)
+                      }));
+                      
+                      return (
+                        <g>
+                          {/* Area under curve */}
+                          <path
+                            d={`M 60 100 ${points.map(p => `L ${p.x} ${p.y}`).join(' ')} L 375 100 Z`}
+                            fill='url(#weeklyGradient)'
+                          />
+                          
+                          {/* Line */}
+                          <path
+                            d={`M ${points[0].x} ${points[0].y} ${points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ')}`}
+                            stroke='#46B9FF'
+                            strokeWidth='3'
+                            fill='none'
+                          />
+                          
+                          {/* Points */}
+                          {points.map((point, index) => (
+                            <circle
+                              key={index}
+                              cx={point.x}
+                              cy={point.y}
+                              r='5'
+                              fill='#A07CFF'
+                              stroke='#46B9FF'
+                              strokeWidth='2'
+                            />
+                          ))}
+                          
+                          {/* X-axis labels */}
+                          {weekDays.map((day, index) => (
+                            <text
+                              key={day}
+                              x={60 + (index * 45)}
+                              y='115'
+                              textAnchor='middle'
+                              fill='rgba(255,255,255,0.7)'
+                              fontSize='10'
+                            >
+                              {day}
+                            </text>
+                          ))}
+                        </g>
+                      );
+                    })()}
+                  </svg>
+                </div>
+              </div>
+
+              {/* 4. Histórico Mensal/Semanal/Diário - Colunas Verticais */}
+              <div className='bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20'>
+                <div className='flex items-center justify-between mb-6'>
+                  <h3 className='text-white font-semibold'>Evolução de Rotinas</h3>
+                  <div className='flex space-x-2'>
+                    {['Mensal', 'Semanal', 'Diário'].map((filter) => (
+                      <button
+                        key={filter}
+                        onClick={() => setHistoryFilter(filter)}
+                        className={`px-3 py-1 rounded-lg text-xs transition-all duration-300 ${
+                          historyFilter === filter
+                            ? 'bg-[#46B9FF]/20 text-[#46B9FF] shadow-lg'
+                            : 'text-white/50 hover:bg-white/10 hover:text-white/80'
+                        }`}
+                      >
+                        {filter}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Chart Container */}
+                <div className='relative pl-12 pb-16'>
+                  {/* Y-axis labels */}
+                  <div className='absolute left-0 top-0 h-40 flex flex-col-reverse justify-between text-xs text-white/60 w-10'>
+                    <span className='text-right' style={{ transform: 'translateY(50%)' }}>0%</span>
+                    <span className='text-right'>25%</span>
+                    <span className='text-right'>50%</span>
+                    <span className='text-right'>75%</span>
+                    <span className='text-right'>100%</span>
+                  </div>
+                  
+                  {/* Chart bars */}
+                  <div className='flex justify-between h-40 relative' style={{ alignItems: 'flex-end' }}>
+                    {(() => {
+                      const getHistoryData = () => {
+                        switch(historyFilter) {
+                          case 'Mensal':
+                            return [
+                              { label: 'Jan', total: 45, completed: 38, isActive: false },
+                              { label: 'Fev', total: 52, completed: 46, isActive: false },
+                              { label: 'Mar', total: 48, completed: 42, isActive: false },
+                              { label: 'Abr', total: 50, completed: 45, isActive: false },
+                              { label: 'Mai', total: 55, completed: 50, isActive: false },
+                              { label: 'Jun', total: 49, completed: 42, isActive: false },
+                              { label: 'Jul', total: 53, completed: 48, isActive: false },
+                              { label: 'Ago', total: 51, completed: 44, isActive: false },
+                              { label: 'Set', total: 58, completed: 52, isActive: false },
+                              { label: 'Out', total: 25, completed: 21, isActive: true }
+                            ];
+                          case 'Semanal':
+                            return [
+                              { label: 'Sem 1', total: 14, completed: 12, isActive: false },
+                              { label: 'Sem 2', total: 15, completed: 13, isActive: false },
+                              { label: 'Sem 3', total: 16, completed: 14, isActive: false },
+                              { label: 'Sem 4', total: 18, completed: 15, isActive: true }
+                            ];
+                          case 'Diário':
+                            return [
+                              { label: 'Seg', total: 8, completed: 7, isActive: false },
+                              { label: 'Ter', total: 9, completed: 8, isActive: true },
+                              { label: 'Qua', total: 7, completed: 6, isActive: false },
+                              { label: 'Qui', total: 8, completed: 7, isActive: false },
+                              { label: 'Sex', total: 10, completed: 9, isActive: false },
+                              { label: 'Sáb', total: 6, completed: 5, isActive: false },
+                              { label: 'Dom', total: 5, completed: 4, isActive: false }
+                            ];
+                          default:
+                            return [];
+                        }
+                      };
+                      
+                      const data = getHistoryData();
+                      
+                      return data.map((item, index) => {
+                        const percentage = item.total > 0 ? (item.completed / item.total) * 100 : 0;
+                        const height = (percentage / 100) * 140; // Max height 140px
+                        const prevItem = index > 0 ? data[index - 1] : null;
+                        const prevPercentage = prevItem && prevItem.total > 0 ? (prevItem.completed / prevItem.total) * 100 : 0;
+                        const difference = prevItem ? percentage - prevPercentage : 0;
+                        
+                        return (
+                          <div key={`${historyFilter}-${item.label}`} className='flex flex-col items-center group relative min-w-0'>
+                            {/* Tooltip */}
+                            <div className='absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10'>
+                              <div className='bg-black/90 text-white text-xs rounded-lg p-3 whitespace-nowrap'>
+                                <div className='font-semibold'>{item.label}</div>
+                                <div>{item.completed} de {item.total} rotinas concluídas</div>
+                                <div className='text-[#46B9FF]'>{Math.round(percentage)}%</div>
+                              </div>
+                            </div>
+                            
+                            {/* Bar - aligned to bottom */}
+                            <div 
+                              className='rounded-t-lg transition-all duration-700 cursor-pointer transform hover:scale-105 mx-auto'
+                              style={{ 
+                                width: '60px',
+                                height: `${height}px`,
+                                background: item.isActive 
+                                  ? 'linear-gradient(135deg, #46B9FF 0%, #A07CFF 100%)'
+                                  : 'linear-gradient(135deg, #46B9FF80 0%, #A07CFF80 100%)',
+                                boxShadow: item.isActive 
+                                  ? '0 0 20px rgba(70, 185, 255, 0.4), 0 0 40px rgba(160, 124, 255, 0.2)' 
+                                  : '0 4px 15px rgba(70, 185, 255, 0.1)',
+                                animationDelay: `${index * 100}ms`,
+                                animation: 'growUp 0.8s ease-out forwards'
+                              }}
+                            ></div>
+                            
+                            {/* Label with comparison - positioned below the baseline */}
+                            <div className='text-center w-full absolute' style={{ top: '100%', paddingTop: '8px' }}>
+                              <div className={`text-xs truncate ${item.isActive ? 'text-[#46B9FF] font-bold' : 'text-white/60'}`}>
+                                {item.label}
+                              </div>
+                              {prevItem && (
+                                <div className={`text-xs mt-1 flex items-center justify-center ${
+                                  difference > 0 ? 'text-[#3EF2A3]' : difference < 0 ? 'text-[#FF82C8]' : 'text-white/40'
+                                }`}>
+                                  {difference > 0 ? '↑' : difference < 0 ? '↓' : '→'}
+                                  {Math.abs(difference).toFixed(0)}%
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                  
+                  {/* Period Summary */}
+                  <div className='mt-20 p-3 bg-white/5 rounded-lg'>
+                    <div className='flex justify-between items-center text-sm'>
+                      <span className='text-white/70'>Período atual:</span>
+                      <span className='text-white font-medium'>
+                        {(() => {
+                          const data = historyFilter === 'Mensal' 
+                            ? { total: 25, completed: 21 }
+                            : historyFilter === 'Semanal'
+                            ? { total: 18, completed: 15 }
+                            : { total: 9, completed: 8 };
+                          const percentage = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
+                          return `${data.completed}/${data.total} rotinas (${percentage}%)`;
+                        })()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. Ranking Pessoal - Gamificação */}
+              <div className='bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20'>
+                <h3 className='text-white font-semibold mb-6'>Ranking de Categorias</h3>
+                <div className='space-y-4'>
+                  {[
+                    { name: 'Rotinas de Estudo', value: 92, color: '#46B9FF', icon: '📚' },
+                    { name: 'Saúde & Exercícios', value: 85, color: '#3EF2A3', icon: '💪' },
+                    { name: 'Sono & Descanso', value: 78, color: '#A07CFF', icon: '😴' }
+                  ].map((category, index) => (
+                    <div key={category.name} className='space-y-2'>
+                      <div className='flex items-center justify-between'>
+                        <div className='flex items-center space-x-3'>
+                          <span className='text-xl'>{category.icon}</span>
+                          <span className='text-white text-sm'>{category.name}</span>
+                        </div>
+                        <div className='flex items-center space-x-2'>
+                          <span className='text-white font-bold'>{category.value}%</span>
+                          <div className='text-lg'>
+                            {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className='w-full bg-[#1E0C3A] rounded-full h-3'>
+                        <div 
+                          className='h-3 rounded-full transition-all duration-1000'
+                          style={{
+                            width: `${category.value}%`,
+                            background: `linear-gradient(90deg, ${category.color} 0%, ${category.color}CC 100%)`,
+                            boxShadow: `0 0 10px ${category.color}66`
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -576,6 +987,18 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      
+      <style jsx>{`
+        @keyframes growUp {
+          from {
+            height: 0;
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   )
 }
