@@ -350,10 +350,10 @@ export default function DashboardPage() {
               {/* COMPLETED TODAY Section */}
               <div>
                 <div 
-                  className='flex items-center justify-between cursor-pointer mb-4'
+                  className='flex items-center cursor-pointer mb-4'
                   onClick={() => setShowCompleted(!showCompleted)}
                 >
-                  <h2 className='text-white text-lg font-bold'>COMPLETED TODAY</h2>
+                  <h2 className='text-white text-lg font-bold mr-2'>COMPLETED TODAY</h2>
                   <svg 
                     className={`w-5 h-5 text-white transform transition-transform ${
                       showCompleted ? 'rotate-180' : ''
