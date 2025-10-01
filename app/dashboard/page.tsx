@@ -201,83 +201,20 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Time Picker */}
-              <div className='flex-1 relative'>
-                <button
-                  onClick={() => setShowTimePicker(!showTimePicker)}
-                  className='w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 flex items-center space-x-2 hover:bg-white/20 transition-all'
-                >
+              {/* Time Input */}
+              <div className='flex-1'>
+                <div className='bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 flex items-center space-x-2'>
                   <svg className='w-5 h-5 text-cyan-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
                   </svg>
-                  <span className='text-white text-sm'>
-                    {newTask.time || '24h'}
-                  </span>
-                </button>
-                
-                {showTimePicker && (
-                  <div className='absolute top-full mt-2 right-0 w-64 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-6 shadow-xl z-10'>
-                    {/* Clock Visual */}
-                    <div className='flex flex-col items-center mb-6'>
-                      {/* Clock Icon */}
-                      <div className='relative mb-4'>
-                        <div className='w-20 h-20 border-4 border-white/30 rounded-full flex items-center justify-center bg-white/5'>
-                          <svg className='w-12 h-12 text-white/60' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12,6 12,12 16,14"></polyline>
-                          </svg>
-                        </div>
-                      </div>
-                      
-                      {/* Time Input */}
-                      <div className='flex items-center space-x-2'>
-                        {/* Hours */}
-                        <input
-                          type="number"
-                          min="0"
-                          max="23"
-                          placeholder="00"
-                          className='w-12 h-12 text-center text-xl font-bold bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/50'
-                          value={newTask.time.split(':')[0] || ''}
-                          onChange={(e) => {
-                            const hours = e.target.value.padStart(2, '0');
-                            const minutes = newTask.time.split(':')[1] || '00';
-                            setNewTask({ ...newTask, time: `${hours}:${minutes}` });
-                          }}
-                        />
-                        
-                        {/* Separator */}
-                        <div className='text-white text-2xl font-bold'>:</div>
-                        
-                        {/* Minutes */}
-                        <input
-                          type="number"
-                          min="0"
-                          max="59"
-                          placeholder="00"
-                          className='w-12 h-12 text-center text-xl font-bold bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-400/50 focus:border-cyan-400/50'
-                          value={newTask.time.split(':')[1] || ''}
-                          onChange={(e) => {
-                            const hours = newTask.time.split(':')[0] || '00';
-                            const minutes = e.target.value.padStart(2, '0');
-                            setNewTask({ ...newTask, time: `${hours}:${minutes}` });
-                          }}
-                        />
-                      </div>
-                      
-                      {/* Set Time Button */}
-                      <button
-                        onClick={() => setShowTimePicker(false)}
-                        className='mt-4 px-6 py-2 rounded-xl text-white font-medium transition-all'
-                        style={{
-                          background: 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 50%, #94D6E8 100%)'
-                        }}
-                      >
-                        Set Time
-                      </button>
-                    </div>
-                  </div>
-                )}
+                  <input
+                    type="time"
+                    value={newTask.time}
+                    onChange={(e) => setNewTask({ ...newTask, time: e.target.value })}
+                    className='flex-1 bg-transparent text-white text-sm focus:outline-none placeholder:text-white/50'
+                    placeholder="00:00"
+                  />
+                </div>
               </div>
             </div>
 
