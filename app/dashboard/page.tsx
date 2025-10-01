@@ -201,7 +201,10 @@ export default function DashboardPage() {
           <h1 className='text-white text-2xl font-bold'>Home</h1>
           <button 
             onClick={() => setShowAddTask(true)}
-            className='w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 hover:bg-white/30 transition-all'
+            className='w-10 h-10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 hover:shadow-lg transition-all'
+            style={{
+              background: 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 50%, #94D6E8 100%)'
+            }}
           >
             <svg className='w-6 h-6 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
               <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 6v6m0 0v6m0-6h6m-6 0H6' />
