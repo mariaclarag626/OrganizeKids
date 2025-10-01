@@ -13,7 +13,7 @@ interface Task {
   date?: string
 }
 
-export default function Dage() {
+export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('todo')
   const [showAddTask, setShowAddTask] = useState(false)
   const [tasks, setTasks] = useState<Task[]>([])
@@ -283,7 +283,7 @@ export default function Dage() {
                     </div>
                   )}
 
-                  <div className='bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex items-center justify-between'>
+                  <div className='bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hidden'>
                     <div className='flex items-center space-x-3'>
                       <div className='w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center'>
                         <span className='text-white text-xs'>�️</span>
