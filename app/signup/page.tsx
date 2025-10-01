@@ -14,14 +14,6 @@ export default function SignUpPage() {
         }}
       />
 
-      {/* Gradient Overlay - From image to purple */}
-      <div 
-        className='absolute inset-0 w-full h-full'
-        style={{
-          background: 'linear-gradient(135deg, rgba(27, 3, 55, 0.6) 0%, rgba(27, 3, 55, 0.5) 25%, rgba(18, 3, 38, 0.4) 50%, rgba(18, 3, 38, 0.6) 75%, rgba(18, 3, 38, 0.8) 100%)',
-        }}
-      />
-
       {/* Content Container */}
       <div className='relative z-10 min-h-screen flex flex-col lg:flex-row'>
         {/* Left side - Logo and inspiring text */}
