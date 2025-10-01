@@ -60,7 +60,7 @@ export default function DashboardPage() {
       <div 
         className='absolute inset-0'
         style={{
-          background: 'linear-gradient(135deg, rgba(27, 3, 55, 0.8) 0%, rgba(18, 3, 38, 0.9) 100%)',
+          background: 'linear-gradient(135deg, rgba(27, 3, 55, 0.3) 0%, rgba(18, 3, 38, 0.4) 100%)',
         }}
       />
 
