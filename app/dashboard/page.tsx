@@ -134,7 +134,7 @@ export default function DashboardPage() {
                 </button>
                 
                 {showDatePicker && (
-                  <div className='absolute top-full mt-2 left-0 w-80 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 shadow-xl z-10'>
+                  <div className='absolute top-full mt-2 left-0 w-80 max-h-96 overflow-y-auto bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 shadow-xl z-10'>
                     {/* Calendar Header */}
                     <div className='flex items-center justify-between mb-4'>
                       <button 
