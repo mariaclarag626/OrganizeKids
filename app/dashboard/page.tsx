@@ -25,6 +25,7 @@ export default function DashboardPage() {
   })
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showTimePicker, setShowTimePicker] = useState(false)
+  const [showCompleted, setShowCompleted] = useState(false)
 
   const handleAddTask = () => {
     if (!newTask.title.trim()) return
@@ -340,19 +341,37 @@ export default function DashboardPage() {
               {/* COMPLETED TODAY Section */}
               {tasks.filter(task => task.completed).length > 0 && (
                 <div>
-                  <h2 className='text-white text-lg font-bold mb-4'>COMPLETED TODAY</h2>
-                  <div className='space-y-3'>
-                    {tasks.filter(task => task.completed).map((task) => (
-                      <div key={task.id} className='bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex items-center space-x-3 opacity-70'>
-                        <div className='w-6 h-6 bg-green-500 rounded-full flex items-center justify-center'>
-                          <svg className='w-4 h-4 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
-                          </svg>
-                        </div>
-                        <p className='text-white font-medium line-through'>{task.title}</p>
-                      </div>
-                    ))}
+                  <div 
+                    className='flex items-center justify-between cursor-pointer mb-4'
+                    onClick={() => setShowCompleted(!showCompleted)}
+                  >
+                    <h2 className='text-white text-lg font-bold'>COMPLETED TODAY</h2>
+                    <svg 
+                      className={`w-5 h-5 text-white transform transition-transform ${
+                        showCompleted ? 'rotate-180' : ''
+                      }`} 
+                      fill='none' 
+                      stroke='currentColor' 
+                      viewBox='0 0 24 24'
+                    >
+                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+                    </svg>
                   </div>
+                  
+                  {showCompleted && (
+                    <div className='space-y-3'>
+                      {tasks.filter(task => task.completed).map((task) => (
+                        <div key={task.id} className='bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex items-center space-x-3 opacity-70'>
+                          <div className='w-6 h-6 bg-green-500 rounded-full flex items-center justify-center'>
+                            <svg className='w-4 h-4 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+                            </svg>
+                          </div>
+                          <p className='text-white font-medium line-through'>{task.title}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
