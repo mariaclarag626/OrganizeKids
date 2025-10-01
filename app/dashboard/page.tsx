@@ -26,6 +26,9 @@ export default function DashboardPage() {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [showTimePicker, setShowTimePicker] = useState(false)
   const [showCompleted, setShowCompleted] = useState(false)
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth())
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear())
+  const [selectedDay, setSelectedDay] = useState<number | null>(null)
 
   const handleAddTask = () => {
     if (!newTask.title.trim()) return
@@ -134,13 +137,35 @@ export default function DashboardPage() {
                   <div className='absolute top-full mt-2 left-0 w-80 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-4 shadow-xl z-10'>
                     {/* Calendar Header */}
                     <div className='flex items-center justify-between mb-4'>
-                      <button className='p-1 hover:bg-white/10 rounded-lg transition-all'>
+                      <button 
+                        onClick={() => {
+                          if (currentMonth === 0) {
+                            setCurrentMonth(11)
+                            setCurrentYear(currentYear - 1)
+                          } else {
+                            setCurrentMonth(currentMonth - 1)
+                          }
+                        }}
+                        className='p-1 hover:bg-white/10 rounded-lg transition-all'
+                      >
                         <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                           <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
                         </svg>
                       </button>
-                      <h3 className='text-white font-semibold text-lg'>March</h3>
-                      <button className='p-1 hover:bg-white/10 rounded-lg transition-all'>
+                      <h3 className='text-white font-semibold text-lg'>
+                        {new Date(currentYear, currentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                      </h3>
+                      <button 
+                        onClick={() => {
+                          if (currentMonth === 11) {
+                            setCurrentMonth(0)
+                            setCurrentYear(currentYear + 1)
+                          } else {
+                            setCurrentMonth(currentMonth + 1)
+                          }
+                        }}
+                        className='p-1 hover:bg-white/10 rounded-lg transition-all'
+                      >
                         <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                           <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 5l7 7-7 7' />
                         </svg>
@@ -158,48 +183,93 @@ export default function DashboardPage() {
                     
                     {/* Calendar Days */}
                     <div className='grid grid-cols-7 gap-1'>
-                      {/* Previous month days (grayed out) */}
-                      {[28, 29].map((day) => (
-                        <button key={`prev-${day}`} className='h-10 text-white/30 text-sm hover:bg-white/5 rounded-lg transition-all'>
-                          {day}
-                        </button>
-                      ))}
-                      
-                      {/* Current month days */}
-                      {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => {
-                        const isToday = day === 15; // Example: 15th is today
-                        const isSelected = day >= 10 && day <= 16; // Example: range selection
+                      {(() => {
+                        const firstDay = new Date(currentYear, currentMonth, 1).getDay()
+                        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate()
+                        const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate()
+                        const days = []
                         
-                        return (
-                          <button
-                            key={day}
-                            onClick={() => {
-                              const selectedDate = `2024-03-${day.toString().padStart(2, '0')}`;
-                              setNewTask({ ...newTask, date: selectedDate });
-                              setShowDatePicker(false);
-                            }}
-                            className={`h-10 text-sm rounded-lg transition-all font-medium ${
-                              isSelected
-                                ? 'text-white shadow-lg'
-                                : isToday
-                                ? 'bg-white/20 text-white'
-                                : 'text-white/80 hover:bg-white/10'
-                            }`}
-                            style={isSelected ? {
-                              background: 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 50%, #94D6E8 100%)'
-                            } : {}}
-                          >
-                            {day}
-                          </button>
-                        );
-                      })}
-                      
-                      {/* Next month days (grayed out) */}
-                      {[1, 2, 3, 4].map((day) => (
-                        <button key={`next-${day}`} className='h-10 text-white/30 text-sm hover:bg-white/5 rounded-lg transition-all'>
-                          {day}
-                        </button>
-                      ))}
+                        // Previous month days
+                        for (let i = firstDay - 1; i >= 0; i--) {
+                          days.push(
+                            <button key={`prev-${daysInPrevMonth - i}`} className='h-10 text-white/30 text-sm hover:bg-white/5 rounded-lg transition-all'>
+                              {daysInPrevMonth - i}
+                            </button>
+                          )
+                        }
+                        
+                        // Current month days
+                        for (let day = 1; day <= daysInMonth; day++) {
+                          const isToday = new Date().getDate() === day && new Date().getMonth() === currentMonth && new Date().getFullYear() === currentYear
+                          const isSelected = selectedDay === day
+                          
+                          days.push(
+                            <button
+                              key={day}
+                              onClick={() => setSelectedDay(day)}
+                              className={`h-10 text-sm rounded-lg transition-all font-medium ${
+                                isSelected
+                                  ? 'text-white shadow-lg'
+                                  : isToday
+                                  ? 'bg-white/20 text-white'
+                                  : 'text-white/80 hover:bg-white/10'
+                              }`}
+                              style={isSelected ? {
+                                background: 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 50%, #94D6E8 100%)'
+                              } : {}}
+                            >
+                              {day}
+                            </button>
+                          )
+                        }
+                        
+                        // Next month days to fill the grid
+                        const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7
+                        const remainingCells = totalCells - (firstDay + daysInMonth)
+                        for (let day = 1; day <= remainingCells; day++) {
+                          days.push(
+                            <button key={`next-${day}`} className='h-10 text-white/30 text-sm hover:bg-white/5 rounded-lg transition-all'>
+                              {day}
+                            </button>
+                          )
+                        }
+                        
+                        return days
+                      })()}
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className='flex justify-between mt-4 pt-4 border-t border-white/20'>
+                      <button
+                        onClick={() => {
+                          setShowDatePicker(false)
+                          setSelectedDay(null)
+                        }}
+                        className='px-4 py-2 text-white/70 hover:text-white transition-all'
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (selectedDay) {
+                            const selectedDate = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${selectedDay.toString().padStart(2, '0')}`
+                            setNewTask({ ...newTask, date: selectedDate })
+                            setShowDatePicker(false)
+                            setSelectedDay(null)
+                          }
+                        }}
+                        disabled={!selectedDay}
+                        className={`px-6 py-2 rounded-xl font-medium transition-all ${
+                          selectedDay 
+                            ? 'text-white shadow-lg' 
+                            : 'text-white/50 cursor-not-allowed'
+                        }`}
+                        style={selectedDay ? {
+                          background: 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 50%, #94D6E8 100%)'
+                        } : {}}
+                      >
+                        OK
+                      </button>
                     </div>
                   </div>
                 )}
