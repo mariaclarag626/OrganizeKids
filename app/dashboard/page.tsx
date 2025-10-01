@@ -207,13 +207,40 @@ export default function DashboardPage() {
 
               {/* Time Input */}
               <div className='flex-1'>
-                <input
-                  type="text"
-                  value={newTask.time}
-                  onChange={(e) => setNewTask({ ...newTask, time: e.target.value })}
-                  placeholder="00:00"
-                  className='w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400/50 placeholder:text-white/50'
-                />
+                <div className='bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl px-4 py-3 flex items-center space-x-2'>
+                  <svg className='w-5 h-5 text-cyan-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
+                  </svg>
+                  <div className='flex items-center space-x-1 flex-1'>
+                    <input
+                      type="text"
+                      value={newTask.time.split(':')[0] || ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 2);
+                        const hours = value.padStart(2, '0');
+                        const minutes = newTask.time.split(':')[1] || '00';
+                        setNewTask({ ...newTask, time: `${hours}:${minutes}` });
+                      }}
+                      placeholder="00"
+                      maxLength={2}
+                      className='w-8 bg-transparent text-white text-sm text-center focus:outline-none placeholder:text-white/50'
+                    />
+                    <span className='text-white font-bold'>:</span>
+                    <input
+                      type="text"
+                      value={newTask.time.split(':')[1] || ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 2);
+                        const minutes = value.padStart(2, '0');
+                        const hours = newTask.time.split(':')[0] || '00';
+                        setNewTask({ ...newTask, time: `${hours}:${minutes}` });
+                      }}
+                      placeholder="00"
+                      maxLength={2}
+                      className='w-8 bg-transparent text-white text-sm text-center focus:outline-none placeholder:text-white/50'
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
