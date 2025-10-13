@@ -1,202 +1,255 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
 export default function SignUpPage() {
+  const router = useRouter()
+  const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [age, setAge] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    if (!age || parseInt(age) < 1 || parseInt(age) > 120) {
+      setError('Please enter a valid age')
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      const response = await fetch('/api/auth-db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'signup',
+          email,
+          password,
+          fullName,
+          age: parseInt(age),
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Account created successfully - redirect to login
+        localStorage.setItem('temp_email', email)
+        alert('Account created successfully! Please login.')
+        router.push('/login')
+      } else {
+        setError(data.error || 'Error creating account')
+      }
+    } catch (err) {
+      setError('Error connecting to server')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <div className='min-h-screen relative overflow-hidden'>
-      {/* Background Image */}
-      <div 
-        className='absolute inset-0 w-full h-full'
-        style={{
-          backgroundImage: 'url(/space-background-new.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      />
+    <div 
+      className='min-h-screen w-full relative overflow-hidden flex items-center justify-center py-8'
+      style={{
+        background: 'linear-gradient(180deg, #0A0118 0%, #1B0B3D 40%, #2D1458 70%, #1B0B3D 100%)',
+      }}
+    >
+      {/* Space background */}
+      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+        <div 
+          className='absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full'
+          style={{
+            background: 'radial-gradient(circle at 35% 35%, #7DE3F4 0%, #4DD0E1 25%, #26C6DA 50%, #00ACC1 75%, #0097A7 100%)',
+            boxShadow: '0 0 100px rgba(77, 208, 225, 0.4), inset -30px -30px 80px rgba(0, 0, 0, 0.3)',
+          }}
+        />
 
-      {/* Content Container */}
-      <div className='relative z-10 min-h-screen flex flex-col lg:flex-row'>
-        {/* Left side - Logo and inspiring text */}
-        <div className='w-full lg:w-1/2 flex flex-col justify-between p-4 sm:p-6 lg:p-8'>
-          {/* Logo/Brand */}
-          <div className='mb-4 lg:mb-8'>
-            <div className='text-white font-bold text-2xl sm:text-3xl drop-shadow-lg'>OrganizeKids</div>
-          </div>
+        <div 
+          className='absolute top-1/3 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full'
+          style={{
+            background: 'radial-gradient(circle at 40% 35%, #A78BFA 0%, #8B5CF6 40%, #7C3AED 70%, #6D28D9 100%)',
+            boxShadow: '0 0 60px rgba(139, 92, 246, 0.5)',
+          }}
+        />
 
-          {/* Inspiring text */}
-          <div className='mb-8 lg:mb-16 text-center lg:text-left'>
-            <h2 
-              className='text-white font-bold text-3xl sm:text-4xl lg:text-5xl mb-4 lg:mb-6 drop-shadow-lg'
-              style={{
-                fontFamily: 'Poppins',
-                lineHeight: '1.1',
-              }}
-            >
-              SIGN IN TO HAVE YOUR<br />
-              GOALS ACHIEVED DAILY!
-            </h2>
-            <p className='text-white/90 text-lg sm:text-xl drop-shadow-md max-w-md mx-auto lg:mx-0'>
-              Join thousands of families organizing their lives better every day
-            </p>
-          </div>
+        <div 
+          className='absolute bottom-0 right-0 w-96 h-96 rounded-full'
+          style={{
+            background: 'radial-gradient(circle at 30% 30%, #B794F6 0%, #9F7AEA 30%, #805AD5 60%, #6B46C1 85%, #553C9A 100%)',
+            boxShadow: '0 0 80px rgba(128, 90, 213, 0.6)',
+          }}
+        />
+
+        {Array.from({ length: 100 }).map((_, i) => (
+          <div
+            key={`star-${i}`}
+            className='absolute rounded-full bg-white'
+            style={{
+              width: `${Math.random() * 3 + 1}px`,
+              height: `${Math.random() * 3 + 1}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              opacity: Math.random() * 0.7 + 0.3,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Signup form */}
+      <div className='relative z-10 w-full max-w-md mx-auto px-4'>
+        <div className='text-center mb-8'>
+          <h2 
+            className='text-white text-6xl font-bold mb-3'
+            style={{ fontFamily: 'Poppins', letterSpacing: '0.05em' }}
+          >
+            SIGN UP
+          </h2>
+          <p className='text-white/80 text-lg' style={{ fontFamily: 'Poppins' }}>
+            Create your account
+          </p>
         </div>
 
-        {/* Right side - Form with white background */}
-        <div className='w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 lg:p-8'>
-          <div className='w-full max-w-lg bg-white/5 backdrop-blur-sm rounded-2xl p-6 sm:p-8 lg:p-10 shadow-2xl border-2 border-white/60'>
-            {/* Back button */}
-            <button
-              className='mb-6 lg:mb-8 flex items-center text-white hover:text-white/80 transition-colors'
-              onClick={() => window.location.href = '/'}
-            >
-              <svg className='w-4 h-4 sm:w-5 sm:h-5 mr-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 19l-7-7 7-7' />
+        {error && (
+          <div className='mb-4 p-3 rounded-xl bg-red-500/20 border border-red-500/50'>
+            <p className='text-red-200 text-sm text-center'>{error}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className='space-y-4'>
+          {/* Full Name */}
+          <div className='relative'>
+            <div className='absolute left-4 top-1/2 -translate-y-1/2 text-white/50'>
+              <svg width='20' height='20' viewBox='0 0 20 20' fill='none'>
+                <path d='M10 10C12.7614 10 15 7.76142 15 5C15 2.23858 12.7614 0 10 0C7.23858 0 5 2.23858 5 5C5 7.76142 7.23858 10 10 10Z' stroke='currentColor' strokeWidth='1.5'/>
+                <path d='M2.5 18.3333C2.5 14.6514 5.65143 11.6667 9.5 11.6667H10.5C14.3486 11.6667 17.5 14.6514 17.5 18.3333' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round'/>
               </svg>
-              <span className='text-sm sm:text-base'>Back</span>
-            </button>
-
-            {/* Header */}
-            <div className='mb-6 lg:mb-8 text-center lg:text-left'>
-              <h1 className='text-2xl sm:text-3xl font-bold text-white mb-2'>SIGN UP</h1>
-              <p className='text-white/80 text-sm sm:text-base'>
-                Already have an account?{' '}
-                <button
-                  className='text-blue-300 hover:text-blue-200 font-medium underline'
-                  onClick={() => window.location.href = '/'}
-                >
-                  Log in
-                </button>
-              </p>
             </div>
-
-            {/* Form */}
-            <form className='space-y-4 sm:space-y-6'>
-              {/* Full Name */}
-              <div>
-                <input
-                  id='fullName'
-                  type='text'
-                  placeholder='Full Name'
-                  className='w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-white/25 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/10 placeholder:text-white/70 text-white text-sm sm:text-base'
-                  style={{
-                    fontFamily: 'Poppins',
-                  }}
-                />
-              </div>
-
-              {/* Email */}
-              <div>
-                <input
-                  id='email'
-                  type='email'
-                  placeholder='Email address'
-                  className='w-full px-4 py-3 border-2 border-white/25 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/10 placeholder:text-white/70 text-white'
-                  style={{
-                    fontFamily: 'Poppins',
-                  }}
-                />
-              </div>
-
-              {/* Age */}
-              <div>
-                <input
-                  id='age'
-                  type='number'
-                  placeholder='Age'
-                  min='1'
-                  max='120'
-                  className='w-full px-4 py-3 border-2 border-white/30 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/20 placeholder:text-white/70 text-white'
-                  style={{
-                    fontFamily: 'Poppins',
-                  }}
-                />
-              </div>
-
-              {/* Password */}
-              <div>
-                <input
-                  id='password'
-                  type='password'
-                  placeholder='Password'
-                  className='w-full px-4 py-3 border-2 border-white/25 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/10 placeholder:text-white/70 text-white'
-                  style={{
-                    fontFamily: 'Poppins',
-                  }}
-                />
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <input
-                  id='confirmPassword'
-                  type='password'
-                  placeholder='Confirm your password'
-                  className='w-full px-4 py-3 border-2 border-white/25 rounded-lg focus:ring-2 focus:ring-white/50 focus:border-white/70 transition-all bg-white/10 placeholder:text-white/70 text-white'
-                  style={{
-                    fontFamily: 'Poppins',
-                  }}
-                />
-              </div>
-
-              {/* Terms and Conditions */}
-              <div className='flex items-start space-x-3'>
-                <input
-                  id='terms'
-                  type='checkbox'
-                  className='mt-1 w-4 h-4 text-purple-600 border-white/25 bg-white/10 rounded focus:ring-white/50 focus:ring-2'
-                />
-                <label htmlFor='terms' className='text-sm text-white/80'>
-                  By registering you agree to our{' '}
-                  <a href='#' className='text-blue-300 hover:text-blue-200 underline'>Terms and Conditions</a>
-                </label>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type='button'
-                className='w-full py-3 px-4 text-white font-semibold rounded-lg transition-all hover:opacity-90 flex items-center justify-center'
-                style={{
-                  background: 'linear-gradient(90deg, #1B0337 0%, #120326 100%)',
-                  fontFamily: 'Poppins',
-                }}
-                onClick={() => window.location.href = '/who-is-using'}
-              >
-                Sign up
-                <svg className='w-5 h-5 ml-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 7l5 5m0 0l-5 5m5-5H6' />
-                </svg>
-              </button>
-            </form>
-
-            {/* Social Login */}
-            <div className='mt-6'>
-              <div className='text-center text-sm text-white/70 mb-4'>Or continue with</div>
-              <div className='flex space-x-3'>
-                <button
-                  className='flex-1 flex items-center justify-center py-2 px-4 border-2 border-white/30 rounded-lg hover:bg-white/10 transition-colors bg-white/5'
-                  onClick={() => alert('Google login coming soon!')}
-                >
-                  <svg className='w-5 h-5 mr-2' viewBox='0 0 24 24'>
-                    <path fill='#4285F4' d='M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z'/>
-                    <path fill='#34A853' d='M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z'/>
-                    <path fill='#FBBC05' d='M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z'/>
-                    <path fill='#EA4335' d='M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z'/>
-                  </svg>
-                  <span className='text-white'>Google</span>
-                </button>
-                <button
-                  className='flex-1 flex items-center justify-center py-2 px-4 border-2 border-white/30 rounded-lg hover:bg-white/10 transition-colors bg-white/5'
-                  onClick={() => alert('Facebook login coming soon!')}
-                >
-                  <svg className='w-5 h-5 mr-2' fill='#1877F2' viewBox='0 0 24 24'>
-                    <path d='M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z'/>
-                  </svg>
-                  <span className='text-white'>Facebook</span>
-                </button>
-              </div>
-            </div>
+            <input
+              type='text'
+              placeholder='Full Name'
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              className='w-full pl-12 pr-4 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition-all'
+              style={{ fontFamily: 'Poppins' }}
+            />
           </div>
+
+          {/* Email */}
+          <div className='relative'>
+            <div className='absolute left-4 top-1/2 -translate-y-1/2 text-white/50'>
+              <svg width='20' height='20' viewBox='0 0 20 20' fill='none'>
+                <path d='M2.5 6.66667L10 11.6667L17.5 6.66667M3.33333 15H16.6667C17.5871 15 18.3333 14.2538 18.3333 13.3333V6.66667C18.3333 5.74619 17.5871 5 16.6667 5H3.33333C2.41286 5 1.66667 5.74619 1.66667 6.66667V13.3333C1.66667 14.2538 2.41286 15 3.33333 15Z' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round'/>
+              </svg>
+            </div>
+            <input
+              type='email'
+              placeholder='Email'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className='w-full pl-12 pr-4 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition-all'
+              style={{ fontFamily: 'Poppins' }}
+            />
+          </div>
+
+          {/* Age */}
+          <div className='relative'>
+            <div className='absolute left-4 top-1/2 -translate-y-1/2 text-white/50'>
+              <svg width='20' height='20' viewBox='0 0 20 20' fill='none'>
+                <path d='M10 18.3333C14.6024 18.3333 18.3333 14.6024 18.3333 10C18.3333 5.39763 14.6024 1.66667 10 1.66667C5.39763 1.66667 1.66667 5.39763 1.66667 10C1.66667 14.6024 5.39763 18.3333 10 18.3333Z' stroke='currentColor' strokeWidth='1.5'/>
+                <path d='M10 5V10L13.3333 11.6667' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round'/>
+              </svg>
+            </div>
+            <input
+              type='number'
+              placeholder='Age'
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              required
+              min='1'
+              max='120'
+              className='w-full pl-12 pr-4 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition-all'
+              style={{ fontFamily: 'Poppins' }}
+            />
+          </div>
+
+          {/* Password */}
+          <div className='relative'>
+            <div className='absolute left-4 top-1/2 -translate-y-1/2 text-white/50'>
+              <svg width='20' height='20' viewBox='0 0 20 20' fill='none'>
+                <path d='M5.83333 9.16667V6.66667C5.83333 4.36548 7.69881 2.5 10 2.5C12.3012 2.5 14.1667 4.36548 14.1667 6.66667V9.16667M5 17.5H15C16.3807 17.5 17.5 16.3807 17.5 15V11.6667C17.5 10.286 16.3807 9.16667 15 9.16667H5C3.61929 9.16667 2.5 10.286 2.5 11.6667V15C2.5 16.3807 3.61929 17.5 5 17.5Z' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round'/>
+              </svg>
+            </div>
+            <input
+              type='password'
+              placeholder='Password'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className='w-full pl-12 pr-4 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition-all'
+              style={{ fontFamily: 'Poppins' }}
+            />
+          </div>
+
+          {/* Confirm Password */}
+          <div className='relative'>
+            <div className='absolute left-4 top-1/2 -translate-y-1/2 text-white/50'>
+              <svg width='20' height='20' viewBox='0 0 20 20' fill='none'>
+                <path d='M5.83333 9.16667V6.66667C5.83333 4.36548 7.69881 2.5 10 2.5C12.3012 2.5 14.1667 4.36548 14.1667 6.66667V9.16667M5 17.5H15C16.3807 17.5 17.5 16.3807 17.5 15V11.6667C17.5 10.286 16.3807 9.16667 15 9.16667H5C3.61929 9.16667 2.5 10.286 2.5 11.6667V15C2.5 16.3807 3.61929 17.5 5 17.5Z' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round'/>
+              </svg>
+            </div>
+            <input
+              type='password'
+              placeholder='Confirm Password'
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className='w-full pl-12 pr-4 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition-all'
+              style={{ fontFamily: 'Poppins' }}
+            />
+          </div>
+
+          {/* Submit button */}
+          <button
+            type='submit'
+            disabled={loading}
+            className='w-full py-4 rounded-xl font-semibold text-white text-lg transition-all hover:brightness-110 disabled:opacity-50'
+            style={{
+              background: 'linear-gradient(90deg, #6366F1 0%, #8B5CF6 100%)',
+              fontFamily: 'Poppins',
+              boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',
+            }}
+          >
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </button>
+        </form>
+
+        <div className='text-center mt-6'>
+          <button
+            onClick={() => router.push('/')}
+            className='text-purple-300 hover:text-purple-200 text-sm transition-colors'
+            style={{ fontFamily: 'Poppins' }}
+          >
+            Already have an account? Login
+          </button>
         </div>
+
+        <p className='text-white/40 text-xs text-center mt-8' style={{ fontFamily: 'Poppins' }}>
+          By registering you agree with our Terms and Conditions
+        </p>
       </div>
     </div>
   )

@@ -1,27 +1,5 @@
-// Temporary simplified database config to avoid client-side issues
-export const db = null
-
-// Export types only
-export type Database = any
-
-// Re-export schema types
-export type {
-  Account,
-  Household,
-  HouseholdMember,
-  NewAccount,
-  NewHousehold,
-  NewHouseholdMember,
-  NewProfile,
-  NewSession,
-  NewTask,
-  NewUser,
-  NewUserPoints,
-  NewVerificationToken,
-  Profile,
-  Session,
-  Task,
-  User,
-  UserPoints,
-  VerificationToken,
-} from './schema'
+// This file is deprecated - use ./index.ts instead
+// Keeping for backwards compatibility, will be removed in future
+export { db } from './index'
+export type { Database } from './index'
+export * from './schema'

@@ -19,6 +19,8 @@ export const users = pgTable('users', {
   emailVerified: timestamp('email_verified', { mode: 'date' }),
   name: varchar('name', { length: 255 }),
   image: text('image'),
+  password: text('password'), // Hash da senha para autenticação por email/senha
+  userType: varchar('user_type', { length: 50 }), // 'parents', 'teenagers', 'kids'
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
 }, (table) => ({
@@ -219,6 +221,169 @@ export const userPointsRelations = relations(userPoints, ({ one }) => ({
   }),
 }))
 
+// Rewards/prizes that can be purchased with points
+export const rewards = pgTable('rewards', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  householdId: uuid('household_id').notNull().references(() => households.id, { onDelete: 'cascade' }),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  cost: integer('cost').notNull().default(0),
+  icon: varchar('icon', { length: 100 }).default('🎁'),
+  isActive: boolean('is_active').default(true),
+  stock: integer('stock'), // null = unlimited
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  createdBy: uuid('created_by').notNull().references(() => users.id),
+}, (table) => ({
+  householdIdx: index('rewards_household_idx').on(table.householdId),
+}))
+
+// Reward redemptions
+export const rewardRedemptions = pgTable('reward_redemptions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  rewardId: uuid('reward_id').notNull().references(() => rewards.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  householdId: uuid('household_id').notNull().references(() => households.id, { onDelete: 'cascade' }),
+  pointsSpent: integer('points_spent').notNull(),
+  status: varchar('status', { length: 50 }).default('pending'), // 'pending', 'approved', 'delivered'
+  redeemedAt: timestamp('redeemed_at', { mode: 'date' }).defaultNow().notNull(),
+  approvedAt: timestamp('approved_at', { mode: 'date' }),
+  approvedBy: uuid('approved_by').references(() => users.id),
+}, (table) => ({
+  userIdx: index('reward_redemptions_user_idx').on(table.userId),
+  householdIdx: index('reward_redemptions_household_idx').on(table.householdId),
+}))
+
+// Achievements/badges
+export const achievements = pgTable('achievements', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  code: varchar('code', { length: 100 }).notNull().unique(), // 'first_task', 'streak_7', etc
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  icon: varchar('icon', { length: 100 }).default('🏆'),
+  category: varchar('category', { length: 50 }), // 'tasks', 'streaks', 'points', etc
+  requirement: integer('requirement'), // number needed to unlock
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+})
+
+// User achievements
+export const userAchievements = pgTable('user_achievements', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  achievementId: uuid('achievement_id').notNull().references(() => achievements.id, { onDelete: 'cascade' }),
+  unlockedAt: timestamp('unlocked_at', { mode: 'date' }).defaultNow().notNull(),
+  progress: integer('progress').default(0),
+}, (table) => ({
+  userIdx: index('user_achievements_user_idx').on(table.userId),
+}))
+
+// Avatar customization options
+export const avatarCustomizations = pgTable('avatar_customizations', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  skinColor: varchar('skin_color', { length: 50 }).default('#FFD1A4'),
+  hairStyle: varchar('hair_style', { length: 50 }).default('short'),
+  hairColor: varchar('hair_color', { length: 50 }).default('#4A3728'),
+  eyeStyle: varchar('eye_style', { length: 50 }).default('happy'),
+  mouthStyle: varchar('mouth_style', { length: 50 }).default('smile'),
+  outfit: varchar('outfit', { length: 50 }).default('casual'),
+  accessories: jsonb('accessories').default([]),
+  background: varchar('background', { length: 50 }).default('stars'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { mode: 'date' }).defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index('avatar_customizations_user_idx').on(table.userId),
+}))
+
+// Relations for new tables
+export const rewardsRelations = relations(rewards, ({ one, many }) => ({
+  household: one(households, {
+    fields: [rewards.householdId],
+    references: [households.id],
+  }),
+  createdBy: one(users, {
+    fields: [rewards.createdBy],
+    references: [users.id],
+  }),
+  redemptions: many(rewardRedemptions),
+}))
+
+export const rewardRedemptionsRelations = relations(rewardRedemptions, ({ one }) => ({
+  reward: one(rewards, {
+    fields: [rewardRedemptions.rewardId],
+    references: [rewards.id],
+  }),
+  user: one(users, {
+    fields: [rewardRedemptions.userId],
+    references: [users.id],
+  }),
+  household: one(households, {
+    fields: [rewardRedemptions.householdId],
+    references: [households.id],
+  }),
+  approvedBy: one(users, {
+    fields: [rewardRedemptions.approvedBy],
+    references: [users.id],
+  }),
+}))
+
+export const achievementsRelations = relations(achievements, ({ many }) => ({
+  userAchievements: many(userAchievements),
+}))
+
+export const userAchievementsRelations = relations(userAchievements, ({ one }) => ({
+  user: one(users, {
+    fields: [userAchievements.userId],
+    references: [users.id],
+  }),
+  achievement: one(achievements, {
+    fields: [userAchievements.achievementId],
+    references: [achievements.id],
+  }),
+}))
+
+export const avatarCustomizationsRelations = relations(avatarCustomizations, ({ one }) => ({
+  user: one(users, {
+    fields: [avatarCustomizations.userId],
+    references: [users.id],
+  }),
+}))
+
+// Task suggestions (kids suggest tasks for parent approval)
+export const taskSuggestions = pgTable('task_suggestions', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  householdId: uuid('household_id').notNull().references(() => households.id, { onDelete: 'cascade' }),
+  suggestedBy: uuid('suggested_by').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  pointsSuggested: integer('points_suggested').notNull().default(10),
+  status: varchar('status', { length: 50 }).notNull().default('pending'), // 'pending', 'approved', 'rejected'
+  reviewedBy: uuid('reviewed_by').references(() => users.id),
+  reviewNotes: text('review_notes'),
+  pointsApproved: integer('points_approved'),
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow().notNull(),
+  reviewedAt: timestamp('reviewed_at', { mode: 'date' }),
+}, (table) => ({
+  householdIdx: index('task_suggestions_household_idx').on(table.householdId),
+  statusIdx: index('task_suggestions_status_idx').on(table.status),
+}))
+
+export const taskSuggestionsRelations = relations(taskSuggestions, ({ one }) => ({
+  household: one(households, {
+    fields: [taskSuggestions.householdId],
+    references: [households.id],
+  }),
+  suggestedBy: one(users, {
+    fields: [taskSuggestions.suggestedBy],
+    references: [users.id],
+    relationName: 'suggestedTasks',
+  }),
+  reviewedBy: one(users, {
+    fields: [taskSuggestions.reviewedBy],
+    references: [users.id],
+    relationName: 'reviewedSuggestions',
+  }),
+}))
+
 // Types
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
@@ -238,3 +403,15 @@ export type Task = typeof tasks.$inferSelect
 export type NewTask = typeof tasks.$inferInsert
 export type UserPoints = typeof userPoints.$inferSelect
 export type NewUserPoints = typeof userPoints.$inferInsert
+export type Reward = typeof rewards.$inferSelect
+export type NewReward = typeof rewards.$inferInsert
+export type RewardRedemption = typeof rewardRedemptions.$inferSelect
+export type NewRewardRedemption = typeof rewardRedemptions.$inferInsert
+export type Achievement = typeof achievements.$inferSelect
+export type NewAchievement = typeof achievements.$inferInsert
+export type UserAchievement = typeof userAchievements.$inferSelect
+export type NewUserAchievement = typeof userAchievements.$inferInsert
+export type AvatarCustomization = typeof avatarCustomizations.$inferSelect
+export type NewAvatarCustomization = typeof avatarCustomizations.$inferInsert
+export type TaskSuggestion = typeof taskSuggestions.$inferSelect
+export type NewTaskSuggestion = typeof taskSuggestions.$inferInsert

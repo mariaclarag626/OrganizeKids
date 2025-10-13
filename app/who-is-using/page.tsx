@@ -1,9 +1,118 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 export default function WhoIsUsingPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [checking, setChecking] = useState(true) // Novo estado para verificação inicial
+  const router = useRouter()
+  const { data: session, status } = useSession()
+
+  // Verificar se usuário já tem userType salvo
+  useEffect(() => {
+    const checkUserType = async () => {
+      // Aguarda a sessão carregar
+      if (status === 'loading') {
+        return
+      }
+
+      // Tenta pegar email da sessão (Google OAuth) ou localStorage (email/senha)
+      const email = session?.user?.email || localStorage.getItem('user_email')
+      console.log('📧 Email:', email)
+      console.log('🔐 Sessão:', session)
+      
+      if (!email) {
+        console.log('❌ Sem email, redirecionando para /')
+        router.push('/')
+        return
+      }
+
+      // Verificar se já tem userType
+      console.log('🔍 Verificando userType no banco...')
+      const response = await fetch('/api/auth-db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'check', email }),
+      })
+      
+      const data = await response.json()
+      console.log('📊 Dados do usuário:', data)
+      
+      if (data.user?.userType) {
+        // Já tem tipo salvo, redireciona direto
+        console.log('✅ UserType encontrado:', data.user.userType)
+        console.log('🚀 Redirecionando para dashboard...')
+        router.push(`/dashboard/${data.user.userType}`)
+      } else {
+        console.log('⚠️ Sem userType, mostrando tela de seleção')
+        setChecking(false) // Libera para mostrar a tela
+      }
+    }
+
+    checkUserType()
+  }, [router, session, status])
+
+  // Se ainda está verificando, não mostra nada (evita flash da página)
+  if (checking) {
+    return (
+      <div className='min-h-screen w-full flex items-center justify-center' style={{
+        background: 'linear-gradient(135deg, #1B0337 0%, #2D1B69 50%, #1B0337 100%)'
+      }}>
+        <div className='text-white text-xl' style={{ fontFamily: 'Poppins' }}>
+          Loading...
+        </div>
+      </div>
+    )
+  }
+
+  const handleEnter = async () => {
+    if (!selectedCategory) {
+      alert('Please select a category before continuing!')
+      return
+    }
+
+    setLoading(true)
+    // Pega email da sessão (Google OAuth) ou localStorage (email/senha)
+    const email = session?.user?.email || localStorage.getItem('user_email')
+
+    if (!email) {
+      alert('Email not found. Please login again.')
+      router.push('/')
+      return
+    }
+
+    try {
+      // Salvar userType no banco de dados
+      const response = await fetch('/api/user/update-type', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email, 
+          userType: selectedCategory 
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Salvar também no localStorage para acesso rápido
+        localStorage.setItem('user_type', selectedCategory)
+        
+        // Redirecionar para o dashboard específico
+        router.push(`/dashboard/${selectedCategory}`)
+      } else {
+        alert('Error saving user type. Please try again.')
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Error saving user type. Please try again.')
+      setLoading(false)
+    }
+  }
   return (
     <div className='space-background flex min-h-screen w-full items-center justify-center p-4 relative'>
       {/* Overlay gradient for better text readability */}
@@ -211,7 +320,7 @@ export default function WhoIsUsingPage() {
         {/* Enter button */}
         <button
           className={`py-4 px-12 text-white font-semibold text-lg rounded-lg transition-all ${
-            selectedCategory 
+            selectedCategory && !loading
               ? 'hover:opacity-90' 
               : 'opacity-50 cursor-not-allowed'
           }`}
@@ -220,15 +329,10 @@ export default function WhoIsUsingPage() {
               ? 'linear-gradient(90deg, #1B0337 0%, #120326 100%)' 
               : 'linear-gradient(90deg, #666 0%, #444 100%)',
           }}
-          onClick={() => {
-            if (selectedCategory) {
-              window.location.href = `/dashboard?userType=${selectedCategory}`
-            } else {
-              alert('Please select a category before continuing!')
-            }
-          }}
+          onClick={handleEnter}
+          disabled={!selectedCategory || loading}
         >
-          Enter
+          {loading ? 'Saving...' : 'Enter'}
         </button>
 
         {/* Warning message when no selection */}

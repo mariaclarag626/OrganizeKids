@@ -15,7 +15,6 @@ export const metadata: Metadata = {
     'Help your family stay organized with tasks, rewards, and household management.',
   keywords: ['family', 'organization', 'kids', 'tasks', 'rewards', 'household'],
   authors: [{ name: 'OrganizeKids Team' }],
-  viewport: 'width=device-width, initial-scale=1',
   openGraph: {
     title: 'OrganizeKids - Organize Your Family Life',
     description:
@@ -24,6 +23,11 @@ export const metadata: Metadata = {
     locale: 'pt_BR',
     alternateLocale: 'en_US',
   },
+}
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
