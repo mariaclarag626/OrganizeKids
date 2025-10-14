@@ -7,6 +7,10 @@ export async function POST(request: NextRequest) {
   try {
     const { email, userType } = await request.json()
 
+    console.log('🔄 [UPDATE-TYPE] Atualizando userType...')
+    console.log('📧 Email:', email)
+    console.log('👤 Novo userType:', userType)
+
     if (!db) {
       return NextResponse.json({ error: 'Database not connected' }, { status: 500 })
     }
@@ -26,15 +30,23 @@ export async function POST(request: NextRequest) {
       .returning()
 
     if (!updatedUser) {
+      console.log('❌ [UPDATE-TYPE] Usuário não encontrado!')
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
+
+    console.log('✅ [UPDATE-TYPE] UserType atualizado com sucesso!')
+    console.log('👤 Dados atualizados:', {
+      email: updatedUser.email,
+      userType: updatedUser.userType,
+      name: updatedUser.name,
+    })
 
     return NextResponse.json({
       success: true,
       user: updatedUser,
     })
   } catch (error) {
-    console.error('Update user type error:', error)
+    console.error('❌ [UPDATE-TYPE] Erro:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

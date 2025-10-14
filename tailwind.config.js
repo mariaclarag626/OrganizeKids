@@ -86,6 +86,30 @@ module.exports = {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-10px)" },
         },
+        "slide-up": {
+          "0%": { transform: "translateY(100%)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        "slide-down": {
+          "0%": { transform: "translateY(-100%)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
+        "scale-in": {
+          "0%": { transform: "scale(0.9)", opacity: "0" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        "bounce-once": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+        "wiggle": {
+          "0%, 100%": { transform: "rotate(-3deg)" },
+          "50%": { transform: "rotate(3deg)" },
+        },
+        "pulse-soft": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.8" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -93,6 +117,12 @@ module.exports = {
         "fade-in": "fade-in 0.5s ease-out",
         "slide-in-from-bottom": "slide-in-from-bottom 0.3s ease-out",
         "floating": "floating 3s ease-in-out infinite",
+        "slide-up": "slide-up 0.3s ease-out",
+        "slide-down": "slide-down 0.3s ease-out",
+        "scale-in": "scale-in 0.2s ease-out",
+        "bounce-once": "bounce-once 0.5s ease-out",
+        "wiggle": "wiggle 0.5s ease-in-out",
+        "pulse-soft": "pulse-soft 2s ease-in-out infinite",
       },
       backgroundImage: {
         'space-gradient': 'linear-gradient(135deg, #1a0b3d 0%, #4c1d95 25%, #1e40af  50%, #0891b2 75%, #0d9488 100%)',

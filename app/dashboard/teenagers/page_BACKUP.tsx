@@ -33,12 +33,12 @@ const THEMES = {
     secondary: 'from-red-400 to-orange-400',
     accent: 'from-orange-400 to-red-400',
   },
-  galaxy: {
-    name: '🪐 Galáxia',
-    bg: 'from-indigo-900 via-purple-800 to-blue-900',
-    primary: 'from-purple-600 to-indigo-600',
-    secondary: 'from-indigo-500 to-purple-500',
-    accent: 'from-blue-500 to-purple-600',
+  rainbow: {
+    name: '🌈 Arco-íris',
+    bg: 'from-pink-400 via-purple-400 via-blue-400 via-green-400 to-yellow-400',
+    primary: 'from-purple-500 via-pink-500 to-blue-500',
+    secondary: 'from-blue-400 via-purple-400 to-pink-400',
+    accent: 'from-pink-400 via-blue-400 to-purple-400',
   },
   ocean: {
     name: '🌊 Oceano',
@@ -225,9 +225,9 @@ export default function KidsDashboard() {
 
   return (
     <div className={`min-h-screen bg-gradient-to-br ${theme.bg} relative overflow-hidden`}>
-      {/* Subtle stars background - mais estrelas para tema Galáxia */}
+      {/* Subtle stars background */}
       <div className="fixed inset-0 pointer-events-none opacity-30">
-        {[...Array(currentTheme === 'galaxy' ? 30 : 10)].map((_, i) => (
+        {[...Array(10)].map((_, i) => (
           <div
             key={i}
             className="absolute text-yellow-300 animate-float"
@@ -243,28 +243,6 @@ export default function KidsDashboard() {
             ⭐
           </div>
         ))}
-        
-        {/* Planetas extras para tema Galáxia */}
-        {currentTheme === 'galaxy' && (
-          <>
-            {['🪐', '🌍', '🌙', '☄️', '🛸'].map((planet, i) => (
-              <div
-                key={`planet-${i}`}
-                className="absolute animate-float"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  fontSize: `${Math.random() * 30 + 20}px`,
-                  animationDelay: `${Math.random() * 5}s`,
-                  animationDuration: `${Math.random() * 15 + 15}s`,
-                  opacity: 0.2 + Math.random() * 0.3,
-                }}
-              >
-                {planet}
-              </div>
-            ))}
-          </>
-        )}
       </div>
 
       {/* Confetti Animation */}

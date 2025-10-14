@@ -20,6 +20,45 @@
   .space-background {
     background-attachment: scroll;
   }
+  
+  /* Mobile-friendly padding */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Smaller text on mobile */
+  h1 {
+    font-size: 1.5rem !important;
+  }
+  
+  h2 {
+    font-size: 1.25rem !important;
+  }
+  
+  /* Stack cards vertically */
+  .grid-auto-mobile {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Touch-friendly buttons */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Full-width modals on mobile */
+  .modal-container {
+    max-width: 100% !important;
+    margin: 1rem !important;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
 }
 
 /* Ensure proper mobile viewport handling */

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { LocalAuthManager } from '@/lib/localAuth'
+import { signIn } from 'next-auth/react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -18,29 +20,42 @@ export default function LoginPage() {
     }
   }, [])
 
+  const handleGoogleLogin = async () => {
+    setLoading(true)
+    try {
+      await signIn('google', { callbackUrl: '/who-is-using' })
+    } catch (err) {
+      setError('Erro ao conectar com Google')
+      setLoading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth-db', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'login',
-          email,
-          password,
-        }),
-      })
+      // Usar LocalAuthManager para validar
+      const result = LocalAuthManager.login(email, password)
 
-      const data = await response.json()
-
-      if (data.success) {
-        localStorage.setItem('user_email', email)
+      if (result.success && result.user) {
+        console.log('✅ Login bem-sucedido!')
+        console.log('📧 Email:', email)
+        console.log('👤 User data:', result.user)
+        
+        // Redirecionar para /who-is-using para escolher o papel
         router.push('/who-is-using')
       } else {
-        setError(data.error || 'Erro ao fazer login')
+        console.log('❌ Login falhou:', result.message)
+        setError(result.message)
+        
+        // Se email não existe, redirecionar para signup
+        if (result.message.includes('não encontrado')) {
+          setTimeout(() => {
+            router.push('/signup?email=' + encodeURIComponent(email))
+          }, 2000)
+        }
       }
     } catch (err) {
       setError('Erro ao conectar com o servidor')
@@ -50,79 +65,29 @@ export default function LoginPage() {
   }
 
   return (
-    <div 
-      className='min-h-screen w-full relative overflow-hidden flex items-center justify-center'
-      style={{
-        background: 'linear-gradient(180deg, #0A0118 0%, #1B0B3D 40%, #2D1458 70%, #1B0B3D 100%)',
-      }}
-    >
-      {/* Space background - same as home page */}
-      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-        <div 
-          className='absolute -top-32 -left-32 w-[600px] h-[600px] rounded-full'
+    <div className='min-h-screen w-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center relative overflow-hidden'>
+      {/* Animated Stars */}
+      {Array.from({ length: 50 }).map((_, i) => (
+        <div
+          key={i}
+          className='absolute bg-white rounded-full'
           style={{
-            background: 'radial-gradient(circle at 35% 35%, #7DE3F4 0%, #4DD0E1 25%, #26C6DA 50%, #00ACC1 75%, #0097A7 100%)',
-            boxShadow: '0 0 100px rgba(77, 208, 225, 0.4), inset -30px -30px 80px rgba(0, 0, 0, 0.3)',
-          }}
-        >
-          <div className='absolute top-20 left-32 w-64 h-32 rounded-full opacity-30'
-            style={{
-              background: 'radial-gradient(ellipse, #1A5F7A 0%, transparent 70%)',
-              filter: 'blur(20px)',
-            }}
-          />
-        </div>
-
-        <div 
-          className='absolute top-1/3 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full'
-          style={{
-            background: 'radial-gradient(circle at 40% 35%, #A78BFA 0%, #8B5CF6 40%, #7C3AED 70%, #6D28D9 100%)',
-            boxShadow: '0 0 60px rgba(139, 92, 246, 0.5), inset -20px -20px 40px rgba(0, 0, 0, 0.4)',
+            width: `${Math.random() * 3}px`,
+            height: `${Math.random() * 3}px`,
+            top: `${Math.random() * 100}%`,
+            left: `${Math.random() * 100}%`,
+            animation: `twinkle ${Math.random() * 3 + 2}s ease-in-out infinite`,
+            animationDelay: `${Math.random() * 2}s`,
           }}
         />
-
-        <div 
-          className='absolute bottom-0 right-0 w-96 h-96 rounded-full'
-          style={{
-            background: 'radial-gradient(circle at 30% 30%, #B794F6 0%, #9F7AEA 30%, #805AD5 60%, #6B46C1 85%, #553C9A 100%)',
-            boxShadow: '0 0 80px rgba(128, 90, 213, 0.6), inset -25px -25px 60px rgba(0, 0, 0, 0.5)',
-          }}
-        />
-
-        {Array.from({ length: 100 }).map((_, i) => (
-          <div
-            key={`star-${i}`}
-            className='absolute rounded-full bg-white'
-            style={{
-              width: `${Math.random() * 3 + 1}px`,
-              height: `${Math.random() * 3 + 1}px`,
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              opacity: Math.random() * 0.7 + 0.3,
-            }}
-          />
-        ))}
-      </div>
-
-      <style jsx>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
-        }
-      `}</style>
+      ))}
 
       {/* Login form */}
-      <div className='relative z-10 w-full max-w-md mx-auto px-4'>
+      <div className='relative z-10 w-full max-w-md mx-auto px-6'>
         <div className='text-center mb-8'>
-          <h2 
-            className='text-white text-6xl font-bold mb-3'
-            style={{ fontFamily: 'Poppins', letterSpacing: '0.05em' }}
-          >
+          <h1 className='text-7xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent'>
             LOGIN
-          </h2>
-          <p className='text-white/80 text-lg' style={{ fontFamily: 'Poppins' }}>
-            Enter your credentials
-          </p>
+          </h1>
         </div>
 
         {error && (
@@ -131,64 +96,76 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className='space-y-4'>
-          <div className='relative'>
-            <div className='absolute left-4 top-1/2 -translate-y-1/2 text-white/50'>
-              <svg width='20' height='20' viewBox='0 0 20 20' fill='none'>
-                <path d='M2.5 6.66667L10 11.6667L17.5 6.66667M3.33333 15H16.6667C17.5871 15 18.3333 14.2538 18.3333 13.3333V6.66667C18.3333 5.74619 17.5871 5 16.6667 5H3.33333C2.41286 5 1.66667 5.74619 1.66667 6.66667V13.3333C1.66667 14.2538 2.41286 15 3.33333 15Z' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round'/>
-              </svg>
-            </div>
-            <input
-              type='email'
-              placeholder='Email'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className='w-full pl-12 pr-4 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition-all'
-              style={{ fontFamily: 'Poppins' }}
-            />
-          </div>
+        <form onSubmit={handleSubmit} className='space-y-5'>
+          {/* Email */}
+          <input
+            type='email'
+            placeholder='Email'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className='w-full px-6 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all'
+          />
 
-          <div className='relative'>
-            <input
-              type='password'
-              placeholder='Password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className='w-full px-4 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition-all'
-              style={{ fontFamily: 'Poppins' }}
-            />
-          </div>
+          {/* Password */}
+          <input
+            type='password'
+            placeholder='Password'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className='w-full px-6 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all'
+          />
 
+          {/* Submit button */}
           <button
             type='submit'
             disabled={loading}
-            className='w-full py-4 rounded-xl font-semibold text-white text-lg transition-all hover:brightness-110 disabled:opacity-50'
-            style={{
-              background: 'linear-gradient(90deg, #6366F1 0%, #8B5CF6 100%)',
-              fontFamily: 'Poppins',
-              boxShadow: '0 4px 20px rgba(99, 102, 241, 0.4)',
-            }}
+            className='w-full py-4 rounded-xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white font-bold text-lg hover:shadow-2xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed'
           >
-            {loading ? 'Logging in...' : 'Sign In'}
+            {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
 
+        {/* Divider */}
+        <div className='flex items-center gap-4 my-6'>
+          <div className='flex-1 h-px bg-white/20'></div>
+          <span className='text-white/50 text-sm'>ou</span>
+          <div className='flex-1 h-px bg-white/20'></div>
+        </div>
+
+        {/* Google Login Button */}
+        <button
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className='w-full py-4 px-6 rounded-xl bg-white hover:bg-gray-100 text-gray-700 font-semibold text-lg flex items-center justify-center gap-3 transition-all hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed'
+        >
+          <svg width='24' height='24' viewBox='0 0 24 24'>
+            <path fill='#4285F4' d='M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z'/>
+            <path fill='#34A853' d='M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z'/>
+            <path fill='#FBBC05' d='M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z'/>
+            <path fill='#EA4335' d='M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z'/>
+          </svg>
+          Continuar com Google
+        </button>
+
+        {/* Sign up link */}
         <div className='text-center mt-6'>
           <button
             onClick={() => router.push('/signup')}
-            className='text-purple-300 hover:text-purple-200 text-sm transition-colors'
-            style={{ fontFamily: 'Poppins' }}
+            className='text-purple-300 hover:text-white transition-colors text-sm'
           >
-            Don't have an account? Sign up
+            Não tem uma conta? Criar Conta
           </button>
         </div>
-
-        <p className='text-white/40 text-xs text-center mt-8' style={{ fontFamily: 'Poppins' }}>
-          By continuing you agree with our Terms and Conditions
-        </p>
       </div>
+
+      <style jsx>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
+        }
+      `}</style>
     </div>
   )
 }

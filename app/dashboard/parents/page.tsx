@@ -1834,130 +1834,368 @@ export default function ParentsDashboard() {
 
               {/* Lista de Rotinas */}
               <div className='space-y-4'>
-                {routines.map(routine => (
-                  <div 
-                    key={routine.id}
-                    className='bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20'
-                  >
-                    <div className='flex items-center justify-between mb-4'>
-                      <div className='flex items-center space-x-3'>
-                        <span className='text-3xl'>{routine.icon}</span>
-                        <div>
-                          <h3 className='text-white font-bold text-lg'>{routine.name}</h3>
-                          <p className='text-white/60 text-sm'>
-                            {routine.tasks.filter(t => t.completed).length}/{routine.tasks.length} concluídos
-                          </p>
+                {routines.length === 0 ? (
+                  <div className='bg-white/5 backdrop-blur-md rounded-2xl p-12 border border-white/10 text-center'>
+                    <div className='text-6xl mb-4'>🌟</div>
+                    <h3 className='text-white text-xl font-bold mb-2'>Nenhuma rotina criada ainda</h3>
+                    <p className='text-white/60 mb-6'>Comece adicionando uma rotina usando os templates abaixo!</p>
+                    <button
+                      onClick={() => setShowAddRoutine(true)}
+                      className='px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-medium hover:shadow-lg transition-all'
+                    >
+                      ➕ Criar Primeira Rotina
+                    </button>
+                  </div>
+                ) : (
+                  routines.map(routine => {
+                    const progress = (routine.tasks.filter(t => t.completed).length / routine.tasks.length) * 100
+                    const isComplete = progress === 100
+                    
+                    return (
+                      <div 
+                        key={routine.id}
+                        className={`bg-gradient-to-br backdrop-blur-md rounded-2xl p-6 border-2 transition-all ${
+                          isComplete 
+                            ? 'from-green-500/20 to-emerald-500/20 border-green-400/50 shadow-xl shadow-green-500/20' 
+                            : 'from-white/10 to-white/5 border-white/20'
+                        }`}
+                      >
+                        <div className='flex items-center justify-between mb-4'>
+                          <div className='flex items-center space-x-3'>
+                            <div className={`text-4xl ${isComplete ? 'animate-bounce' : ''}`}>
+                              {isComplete ? '🎉' : routine.icon}
+                            </div>
+                            <div>
+                              <h3 className='text-white font-bold text-xl'>{routine.name}</h3>
+                              <p className='text-white/60 text-sm'>
+                                {routine.tasks.filter(t => t.completed).length}/{routine.tasks.length} tarefas concluídas
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {/* Círculo de Progresso */}
+                          <div className='relative w-20 h-20'>
+                            <svg className='w-20 h-20 transform -rotate-90' viewBox='0 0 80 80'>
+                              <circle
+                                cx='40'
+                                cy='40'
+                                r='32'
+                                fill='transparent'
+                                stroke='rgba(255,255,255,0.1)'
+                                strokeWidth='6'
+                              />
+                              <circle
+                                cx='40'
+                                cy='40'
+                                r='32'
+                                fill='transparent'
+                                stroke={isComplete ? '#10b981' : '#3b82f6'}
+                                strokeWidth='6'
+                                strokeDasharray={`${2 * Math.PI * 32}`}
+                                strokeDashoffset={`${2 * Math.PI * 32 * (1 - progress / 100)}`}
+                                strokeLinecap='round'
+                                className='transition-all duration-500'
+                              />
+                            </svg>
+                            <div className='absolute inset-0 flex items-center justify-center'>
+                              <span className='text-white font-bold text-sm'>{Math.round(progress)}%</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                      
-                      {/* Barra de progresso */}
-                      <div className='w-24 h-2 bg-white/20 rounded-full overflow-hidden'>
-                        <div 
-                          className='h-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all'
-                          style={{ 
-                            width: `${(routine.tasks.filter(t => t.completed).length / routine.tasks.length) * 100}%` 
-                          }}
-                        />
-                      </div>
-                    </div>
 
-                    {/* Checklist */}
-                    <div className='space-y-2'>
-                      {routine.tasks.map(task => (
-                        <div 
-                          key={task.id}
-                          className='flex items-center space-x-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all'
-                        >
+                        {/* Mensagem de Conclusão */}
+                        {isComplete && (
+                          <div className='mb-4 p-3 bg-green-500/20 rounded-xl border border-green-400/30'>
+                            <p className='text-green-100 text-sm font-medium text-center flex items-center justify-center space-x-2'>
+                              <span>✨</span>
+                              <span>Parabéns! Rotina completada com sucesso!</span>
+                              <span>✨</span>
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Checklist com Visual Melhorado */}
+                        <div className='space-y-2 mb-4'>
+                          {routine.tasks.map((task, index) => (
+                            <div 
+                              key={task.id}
+                              className={`flex items-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
+                                task.completed 
+                                  ? 'bg-green-500/10 border border-green-400/30' 
+                                  : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20'
+                              }`}
+                            >
+                              <div className='flex items-center space-x-3 flex-1'>
+                                <span className='text-white/40 font-mono text-sm w-6'>{index + 1}.</span>
+                                <button
+                                  onClick={() => {
+                                    const updatedRoutines = routines.map(r => 
+                                      r.id === routine.id 
+                                        ? {
+                                            ...r,
+                                            tasks: r.tasks.map(t => 
+                                              t.id === task.id ? { ...t, completed: !t.completed } : t
+                                            )
+                                          }
+                                        : r
+                                    )
+                                    setRoutines(updatedRoutines)
+                                    localStorage.setItem('organizekids_routines', JSON.stringify(updatedRoutines))
+                                    
+                                    // Confete ao completar
+                                    if (!task.completed && updatedRoutines.find(r => r.id === routine.id)?.tasks.every(t => t.completed)) {
+                                      setToast({ message: '🎉 Rotina completada! Parabéns!', type: 'success' })
+                                    }
+                                  }}
+                                  className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all ${
+                                    task.completed 
+                                      ? 'bg-green-500 border-green-500 scale-110' 
+                                      : 'border-white/30 hover:border-green-400 hover:scale-110'
+                                  }`}
+                                >
+                                  {task.completed && (
+                                    <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={3} d='M5 13l4 4L19 7' />
+                                    </svg>
+                                  )}
+                                </button>
+                                <span className={`text-white font-medium flex-1 transition-all ${
+                                  task.completed ? 'line-through opacity-60' : ''
+                                }`}>
+                                  {task.title}
+                                </span>
+                              </div>
+                              {task.completed && (
+                                <span className='text-xl animate-bounce'>✅</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Botões de Ação */}
+                        <div className='flex items-center space-x-2'>
                           <button
                             onClick={() => {
                               const updatedRoutines = routines.map(r => 
                                 r.id === routine.id 
-                                  ? {
-                                      ...r,
-                                      tasks: r.tasks.map(t => 
-                                        t.id === task.id ? { ...t, completed: !t.completed } : t
-                                      )
-                                    }
+                                  ? { ...r, tasks: r.tasks.map(t => ({ ...t, completed: false })) }
                                   : r
                               )
                               setRoutines(updatedRoutines)
-                              // Salvar imediatamente
                               localStorage.setItem('organizekids_routines', JSON.stringify(updatedRoutines))
+                              setToast({ message: '🔄 Rotina resetada!', type: 'info' })
                             }}
-                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                              task.completed 
-                                ? 'bg-green-500 border-green-500' 
-                                : 'border-white/30 hover:border-green-500'
-                            }`}
+                            className='flex-1 py-3 rounded-xl text-white/70 hover:text-white text-sm font-medium transition-all border border-white/20 hover:bg-white/10 flex items-center justify-center space-x-2'
                           >
-                            {task.completed && (
-                              <svg className='w-4 h-4 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={3} d='M5 13l4 4L19 7' />
-                              </svg>
-                            )}
+                            <span>🔄</span>
+                            <span>Resetar</span>
                           </button>
-                          <span className={`text-white flex-1 ${task.completed ? 'line-through opacity-50' : ''}`}>
-                            {task.title}
-                          </span>
+                          <button
+                            onClick={() => {
+                              const updatedRoutines = routines.filter(r => r.id !== routine.id)
+                              setRoutines(updatedRoutines)
+                              localStorage.setItem('organizekids_routines', JSON.stringify(updatedRoutines))
+                              setToast({ message: '🗑️ Rotina removida!', type: 'info' })
+                            }}
+                            className='py-3 px-4 rounded-xl text-red-400 hover:text-red-300 text-sm font-medium transition-all border border-red-400/30 hover:bg-red-500/10'
+                          >
+                            �️
+                          </button>
                         </div>
-                      ))}
-                    </div>
-
-                    {/* Botão Reset */}
-                    <button
-                      onClick={() => {
-                        const updatedRoutines = routines.map(r => 
-                          r.id === routine.id 
-                            ? { ...r, tasks: r.tasks.map(t => ({ ...t, completed: false })) }
-                            : r
-                        )
-                        setRoutines(updatedRoutines)
-                        // Salvar imediatamente
-                        localStorage.setItem('organizekids_routines', JSON.stringify(updatedRoutines))
-                      }}
-                      className='mt-4 w-full py-2 rounded-xl text-white/70 hover:text-white text-sm font-medium transition-all border border-white/20 hover:bg-white/10'
-                    >
-                      🔄 Resetar Rotina
-                    </button>
-                  </div>
-                ))}
+                      </div>
+                    )
+                  })
+                )}
               </div>
 
-              {/* Templates Prontos */}
+              {/* Templates Prontos - VERSÃO MELHORADA */}
               <div className='bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md rounded-2xl p-6 border border-purple-300/30'>
-                <h3 className='text-white font-bold text-lg mb-4'>✨ Templates Prontos</h3>
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
-                  {[
-                    { name: 'Rotina Escolar', icon: '📚', tasks: ['Acordar cedo', 'Tomar café', 'Arrumar mochila', 'Ir para escola'] },
-                    { name: 'Fim de Semana', icon: '🎮', tasks: ['Arrumar o quarto', 'Ajudar em casa', 'Tempo livre', 'Dormir'] },
-                    { name: 'Higiene', icon: '🧼', tasks: ['Tomar banho', 'Escovar dentes', 'Lavar mãos', 'Pentear cabelo'] }
-                  ].map((template, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        const newRoutine = {
-                          id: Date.now().toString(),
-                          name: template.name,
-                          type: 'custom' as const,
-                          icon: template.icon,
-                          tasks: template.tasks.map((t, i) => ({
-                            id: `${i}`,
-                            title: t,
-                            completed: false
-                          }))
-                        }
-                        const updatedRoutines = [...routines, newRoutine]
-                        setRoutines(updatedRoutines)
-                        // Salvar imediatamente
-                        localStorage.setItem('organizekids_routines', JSON.stringify(updatedRoutines))
-                      }}
-                      className='p-4 rounded-xl bg-white/10 hover:bg-white/20 transition-all text-left border border-white/20'
-                    >
-                      <div className='text-2xl mb-2'>{template.icon}</div>
-                      <p className='text-white font-bold text-sm'>{template.name}</p>
-                      <p className='text-white/60 text-xs mt-1'>{template.tasks.length} tarefas</p>
-                    </button>
-                  ))}
+                <div className='flex items-center justify-between mb-6'>
+                  <h3 className='text-white font-bold text-xl flex items-center space-x-2'>
+                    <span className='text-2xl'>✨</span>
+                    <span>Templates de Rotinas</span>
+                  </h3>
+                  <span className='text-white/60 text-sm'>Clique para adicionar</span>
+                </div>
+
+                {/* Templates Matinais */}
+                <div className='mb-6'>
+                  <h4 className='text-white/80 font-semibold text-sm mb-3 flex items-center space-x-2'>
+                    <span>🌅</span>
+                    <span>ROTINAS MATINAIS</span>
+                  </h4>
+                  <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+                    {[
+                      { 
+                        name: 'Rotina Escolar Completa', 
+                        icon: '📚', 
+                        tasks: [
+                          'Acordar no horário',
+                          'Arrumar a cama',
+                          'Escovar os dentes',
+                          'Tomar banho',
+                          'Vestir uniforme',
+                          'Tomar café da manhã',
+                          'Arrumar mochila',
+                          'Conferir lição de casa',
+                          'Ir para escola'
+                        ],
+                        color: 'from-blue-500/30 to-cyan-500/30 border-cyan-400/40'
+                      },
+                      { 
+                        name: 'Manhã de Fim de Semana', 
+                        icon: '☀️', 
+                        tasks: [
+                          'Acordar sem pressa',
+                          'Escovar os dentes',
+                          'Tomar café com a família',
+                          'Arrumar o quarto',
+                          'Guardar brinquedos',
+                          'Tempo de leitura'
+                        ],
+                        color: 'from-yellow-500/30 to-orange-500/30 border-yellow-400/40'
+                      },
+                      { 
+                        name: 'Higiene Matinal', 
+                        icon: '🧼', 
+                        tasks: [
+                          'Lavar o rosto',
+                          'Escovar os dentes',
+                          'Pentear o cabelo',
+                          'Passar desodorante',
+                          'Trocar de roupa',
+                          'Lavar as mãos'
+                        ],
+                        color: 'from-green-500/30 to-emerald-500/30 border-green-400/40'
+                      }
+                    ].map((template, idx) => (
+                      <button
+                        key={`morning-${idx}`}
+                        onClick={() => {
+                          const newRoutine = {
+                            id: Date.now().toString(),
+                            name: template.name,
+                            type: 'custom' as const,
+                            icon: template.icon,
+                            tasks: template.tasks.map((t, i) => ({
+                              id: `${i}`,
+                              title: t,
+                              completed: false
+                            }))
+                          }
+                          const updatedRoutines = [...routines, newRoutine]
+                          setRoutines(updatedRoutines)
+                          localStorage.setItem('organizekids_routines', JSON.stringify(updatedRoutines))
+                          setToast({ message: `✨ Rotina "${template.name}" adicionada!`, type: 'success' })
+                        }}
+                        className={`p-4 rounded-xl bg-gradient-to-br ${template.color} hover:scale-105 transition-all text-left border-2 group`}
+                      >
+                        <div className='text-3xl mb-2'>{template.icon}</div>
+                        <p className='text-white font-bold text-sm mb-1'>{template.name}</p>
+                        <p className='text-white/60 text-xs'>{template.tasks.length} tarefas</p>
+                        <div className='mt-3 opacity-0 group-hover:opacity-100 transition-opacity'>
+                          <div className='text-white/50 text-xs'>Clique para adicionar →</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Templates Noturnos */}
+                <div>
+                  <h4 className='text-white/80 font-semibold text-sm mb-3 flex items-center space-x-2'>
+                    <span>🌙</span>
+                    <span>ROTINAS NOTURNAS</span>
+                  </h4>
+                  <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+                    {[
+                      { 
+                        name: 'Preparar para Dormir', 
+                        icon: '😴', 
+                        tasks: [
+                          'Jantar em família',
+                          'Guardar brinquedos',
+                          'Tomar banho',
+                          'Escovar os dentes',
+                          'Vestir pijama',
+                          'Preparar mochila do dia seguinte',
+                          'Ler um livro',
+                          'Oração/Meditação',
+                          'Dormir no horário'
+                        ],
+                        color: 'from-indigo-500/30 to-purple-500/30 border-indigo-400/40'
+                      },
+                      { 
+                        name: 'Rotina de Lição de Casa', 
+                        icon: '📝', 
+                        tasks: [
+                          'Lavar as mãos',
+                          'Organizar mesa de estudos',
+                          'Fazer lição de casa',
+                          'Revisar matéria do dia',
+                          'Preparar material para amanhã',
+                          'Guardar livros na mochila',
+                          'Tempo livre'
+                        ],
+                        color: 'from-pink-500/30 to-rose-500/30 border-pink-400/40'
+                      },
+                      { 
+                        name: 'Fim de Dia Relaxante', 
+                        icon: '🌟', 
+                        tasks: [
+                          'Jantar com calma',
+                          'Conversar sobre o dia',
+                          'Atividade em família',
+                          'Tomar banho morno',
+                          'Colocar pijama',
+                          'História antes de dormir',
+                          'Abraço de boa noite',
+                          'Luzes apagadas'
+                        ],
+                        color: 'from-violet-500/30 to-fuchsia-500/30 border-violet-400/40'
+                      }
+                    ].map((template, idx) => (
+                      <button
+                        key={`night-${idx}`}
+                        onClick={() => {
+                          const newRoutine = {
+                            id: Date.now().toString(),
+                            name: template.name,
+                            type: 'custom' as const,
+                            icon: template.icon,
+                            tasks: template.tasks.map((t, i) => ({
+                              id: `${i}`,
+                              title: t,
+                              completed: false
+                            }))
+                          }
+                          const updatedRoutines = [...routines, newRoutine]
+                          setRoutines(updatedRoutines)
+                          localStorage.setItem('organizekids_routines', JSON.stringify(updatedRoutines))
+                          setToast({ message: `🌙 Rotina "${template.name}" adicionada!`, type: 'success' })
+                        }}
+                        className={`p-4 rounded-xl bg-gradient-to-br ${template.color} hover:scale-105 transition-all text-left border-2 group`}
+                      >
+                        <div className='text-3xl mb-2'>{template.icon}</div>
+                        <p className='text-white font-bold text-sm mb-1'>{template.name}</p>
+                        <p className='text-white/60 text-xs'>{template.tasks.length} tarefas</p>
+                        <div className='mt-3 opacity-0 group-hover:opacity-100 transition-opacity'>
+                          <div className='text-white/50 text-xs'>Clique para adicionar →</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dica */}
+                <div className='mt-6 p-4 bg-white/5 rounded-xl border border-white/10'>
+                  <p className='text-white/70 text-sm flex items-start space-x-2'>
+                    <span className='text-lg'>💡</span>
+                    <span>
+                      <strong className='text-white'>Dica:</strong> As rotinas ajudam as crianças a desenvolver autonomia e responsabilidade. 
+                      Incentive-as a marcar cada tarefa conforme concluem!
+                    </span>
+                  </p>
                 </div>
               </div>
             </div>
