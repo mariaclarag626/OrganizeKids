@@ -61,7 +61,7 @@ export function useAutoSave<T>(
   key: string,
   data: T,
   delay: number = 1000
-): void {
+): (() => void) | void {
   if (typeof window === 'undefined') return
 
   const timeoutId = setTimeout(() => {
