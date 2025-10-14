@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function DashboardPage() {
+function DashboardRedirect() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const userType = searchParams.get('userType')
@@ -30,5 +30,21 @@ export default function DashboardPage() {
         Loading...
       </div>
     </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen w-full flex items-center justify-center" style={{
+        background: 'linear-gradient(135deg, #1B0337 0%, #2D1B69 50%, #1B0337 100%)'
+      }}>
+        <div className="text-white text-xl" style={{ fontFamily: 'Poppins' }}>
+          Loading...
+        </div>
+      </div>
+    }>
+      <DashboardRedirect />
+    </Suspense>
   )
 }
