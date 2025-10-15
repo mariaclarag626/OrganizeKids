@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { FamilyManager } from '@/lib/familyManager'
 import { LocalAuthManager } from '@/lib/localAuth'
+import { TaskManager } from '@/lib/taskManager'
 
 // Temas disponíveis para personalização
 const THEMES = {
@@ -93,9 +94,13 @@ export default function KidsDashboard() {
   const [isConnectedToFamily, setIsConnectedToFamily] = useState(false)
 
   useEffect(() => {
-    // Initialize with mock data immediately
-    setUser({ id: '1', name: 'Maria', avatar: '👧' })
-    setPoints(150)
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (!currentUser) {
+      router.push('/signup')
+      return
+    }
+    
+    setUser({ id: currentUser.id, name: currentUser.name, avatar: '👧' })
     
     // Load saved theme from localStorage
     const savedTheme = localStorage.getItem('kidTheme') as ThemeType
@@ -103,12 +108,27 @@ export default function KidsDashboard() {
       setCurrentTheme(savedTheme)
     }
     
-    setTasks([
-      { id: '1', title: 'Arrumar a cama', points: 10, isCompleted: false, icon: '🛏️', dueDate: new Date() },
-      { id: '2', title: 'Escovar os dentes', points: 5, isCompleted: true, icon: '🦷', dueDate: new Date() },
-      { id: '3', title: 'Fazer lição de casa', points: 20, isCompleted: false, icon: '📚', dueDate: new Date() },
-      { id: '4', title: 'Ajudar com a louça', points: 15, isCompleted: false, icon: '🍽️', dueDate: new Date() },
-    ])
+    // Carregar tarefas atribuídas ao filho usando TaskManager
+    const pendingTasks = TaskManager.getChildTasks(currentUser.id, { status: 'pending' })
+    const completedTasks = TaskManager.getChildTasks(currentUser.id, { status: 'completed' })
+    const assignedTasks = [...pendingTasks, ...completedTasks]
+    const convertedTasks = assignedTasks.map(t => ({
+      id: t.id,
+      title: t.title,
+      points: t.points,
+      isCompleted: t.status === 'approved',
+      icon: getCategoryIcon(t.category),
+      dueDate: t.dueDate ? new Date(t.dueDate) : new Date()
+    }))
+    setTasks(convertedTasks)
+    
+    // Carregar pontos totais usando TaskManager
+    const totalPoints = TaskManager.getChildPoints(currentUser.id)
+    setPoints(totalPoints)
+    
+    // Carregar estatísticas
+    const stats = TaskManager.getChildStats(currentUser.id)
+    
     setRewards([
       { id: '1', title: '30 min de videogame', cost: 50, icon: '🎮' },
       { id: '2', title: 'Escolher o filme', cost: 30, icon: '🎬' },
@@ -116,27 +136,49 @@ export default function KidsDashboard() {
       { id: '4', title: 'Dormir mais tarde', cost: 80, icon: '🌙' },
     ])
     setAchievements([
-      { id: '1', title: 'Primeira Tarefa', unlocked: true, icon: '🌟', description: 'Complete sua primeira tarefa' },
+      { id: '1', title: 'Primeira Tarefa', unlocked: stats.tasksCompleted > 0, icon: '🌟', description: 'Complete sua primeira tarefa' },
       { id: '2', title: 'Sequência de 7 dias', unlocked: false, icon: '🔥', description: 'Complete tarefas por 7 dias seguidos', progress: 3, requirement: 7 },
-      { id: '3', title: 'Mestre das Tarefas', unlocked: false, icon: '👑', description: 'Complete 50 tarefas', progress: 12, requirement: 50 },
+      { id: '3', title: 'Mestre das Tarefas', unlocked: stats.tasksCompleted >= 50, icon: '👑', description: 'Complete 50 tarefas', progress: stats.tasksCompleted, requirement: 50 },
     ])
     setRanking([
-      { id: '2', name: 'João', avatar: '👦', points: 180, position: 1 },
-      { id: '1', name: 'Maria', avatar: '👧', points: 150, position: 2, isCurrentUser: true },
-      { id: '3', name: 'Pedro', avatar: '🧒', points: 120, position: 3 },
+      { id: currentUser.id, name: currentUser.name, avatar: '👧', points: totalPoints, position: 1, isCurrentUser: true },
     ])
+    
+    console.log('📥 Carregando tarefas atribuídas:', convertedTasks.length, 'tarefa(s)')
+    console.log('💰 Pontos totais:', totalPoints)
   }, []) // Empty dependency array - run once on mount
+  
+  const getCategoryIcon = (category: string): string => {
+    const icons: Record<string, string> = {
+      estudos: '📚',
+      saude: '🏃',
+      domestico: '🏠',
+      lazer: '🎮',
+      pessoal: '✨'
+    }
+    return icons[category] || '📝'
+  }
 
   const handleCompleteTask = (taskId: string) => {
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (!currentUser) return
+    
     const task = tasks.find(t => t.id === taskId)
     if (!task || task.isCompleted) return
 
+    // Chamar TaskManager.completeTask
+    const success = TaskManager.completeTask(taskId, currentUser.id)
+    if (!success) {
+      alert('Erro ao marcar tarefa como concluída')
+      return
+    }
+
     // Mensagens simples e diretas
     const messages = [
-      `Tarefa concluída! +${task.points} pontos`,
-      `Muito bem! +${task.points} pontos`,
-      `Ótimo trabalho! +${task.points} pontos`,
-      `Parabéns! +${task.points} pontos`,
+      `Tarefa concluída! Aguardando aprovação dos pais 🎉`,
+      `Muito bem! Seus pais vão aprovar em breve 👏`,
+      `Ótimo trabalho! Esperando aprovação 🌟`,
+      `Parabéns! Logo você ganha ${task.points} pontos ⭐`,
     ]
     const randomMessage = messages[Math.floor(Math.random() * messages.length)]
     setCelebrationMessage(randomMessage)
@@ -148,18 +190,11 @@ export default function KidsDashboard() {
       setCelebrationMessage('')
     }, 3000)
 
-    // Atualizar tarefa
+    // Atualizar tarefa visualmente (mas não adiciona pontos ainda)
     setTasks(tasks.map(t => t.id === taskId ? { ...t, isCompleted: true } : t))
-    setPoints(points + task.points)
 
-    // Atualizar ranking
-    setRanking(ranking.map(r => 
-      r.isCurrentUser 
-        ? { ...r, points: r.points + task.points }
-        : r
-    ).sort((a, b) => b.points - a.points).map((r, i) => ({ ...r, position: i + 1 })))
-
-    // TODO: Chamar API para atualizar no banco
+    // NÃO atualiza pontos ainda - só após aprovação dos pais
+    console.log(`✅ Tarefa "${task.title}" marcada como concluída, aguardando aprovação`)
   }
 
   const handleRedeemReward = (rewardId: string) => {

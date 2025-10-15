@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Toast from '@/components/Toast'
 import { LocalAuthManager } from '@/lib/localAuth'
 import { FamilyManager } from '@/lib/familyManager'
+import { TaskManager } from '@/lib/taskManager'
 
 interface Task {
   id: string
@@ -176,15 +177,9 @@ export default function ParentsDashboard() {
 
   // LocalStorage - Carregar dados ao montar
   useEffect(() => {
-    const savedTasks = localStorage.getItem('organizekids_tasks')
     const savedRewards = localStorage.getItem('organizekids_rewards')
     const savedRoutines = localStorage.getItem('organizekids_routines')
 
-    if (savedTasks) {
-      const parsed = JSON.parse(savedTasks)
-      console.log('📥 Carregando tarefas do localStorage:', parsed.length, 'tarefas')
-      setTasks(parsed)
-    }
     if (savedRewards) setRewards(JSON.parse(savedRewards))
     if (savedRoutines) setRoutines(JSON.parse(savedRoutines))
 
@@ -200,19 +195,44 @@ export default function ParentsDashboard() {
       }
 
       // Converte membros da família para formato Child
-      const familyChildren: Child[] = FamilyManager.getChildren(currentUser.id).map(member => ({
-        id: member.id,
-        name: member.name,
-        gender: member.role === 'teenager' ? 'son' : 'son', // Simplificado
-        code: family!.code,
-        codeExpires: new Date(family!.codeExpires),
-        avatar: member.avatar,
-        tasksCompleted: 0, // TODO: calcular do histórico
-        totalPoints: 0 // TODO: calcular do histórico
-      }))
+      const familyChildren: Child[] = FamilyManager.getChildren(currentUser.id).map(member => {
+        const stats = TaskManager.getChildStats(member.id)
+        return {
+          id: member.id,
+          name: member.name,
+          gender: member.role === 'teenager' ? 'son' : 'son', // Simplificado
+          code: family!.code,
+          codeExpires: new Date(family!.codeExpires),
+          avatar: member.avatar,
+          tasksCompleted: stats.tasksCompleted,
+          totalPoints: stats.totalPoints
+        }
+      })
 
       setChildren(familyChildren)
       console.log('📥 Carregando família:', familyChildren.length, 'filho(s)')
+
+      // Carregar tarefas da família usando TaskManager
+      const familyTasks = TaskManager.getFamilyTasks(family.id)
+      const category = taskCategories[0] // Default
+      const convertedTasks = familyTasks.map(ft => ({
+        id: ft.id,
+        title: ft.title,
+        subtitle: ft.description,
+        time: '00:00',
+        icon: taskCategories.find(c => c.id === ft.category)?.icon || '📝',
+        color: taskCategories.find(c => c.id === ft.category)?.color || 'bg-blue-400',
+        completed: ft.status === 'approved',
+        date: ft.dueDate,
+        childId: ft.assignedTo,
+        category: ft.category,
+        recurrence: ft.recurrence,
+        weekDays: ft.weekDays,
+        points: ft.points,
+        priority: 'medium' as const
+      }))
+      setTasks(convertedTasks)
+      console.log('📥 Carregando tarefas da família:', convertedTasks.length, 'tarefa(s)')
     }
   }, [])
 
@@ -325,6 +345,18 @@ export default function ParentsDashboard() {
       return
     }
 
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (!currentUser) {
+      setToast({ message: 'Erro: Usuário não autenticado', type: 'error' })
+      return
+    }
+
+    const family = FamilyManager.getUserFamily(currentUser.id)
+    if (!family) {
+      setToast({ message: 'Erro: Família não encontrada', type: 'error' })
+      return
+    }
+
     const category = taskCategories.find(c => c.id === newTask.category)
 
     // Se está editando uma tarefa existente
@@ -353,68 +385,74 @@ export default function ParentsDashboard() {
       setToast({ message: 'Tarefa atualizada com sucesso! ✨', type: 'success' })
       setEditingTask(null)
     } else {
-      // Define a data automaticamente para tarefas recorrentes
-      const today = new Date().toISOString().split('T')[0]
-      const taskDate = newTask.recurrence !== 'once' ? today : (newTask.date || undefined)
-
       // Se não selecionou filho específico, cria para todos
       if (!newTask.childId && children.length > 0) {
-        const newTasks = children.map(child => ({
-          id: `${Date.now()}-${child.id}`,
-          title: newTask.title,
-          subtitle: newTask.notes || undefined,
-          time: newTask.time || '00:00',
-          icon: category?.icon || '📝',
-          color: category?.color || 'bg-blue-400',
-          completed: false,
-          date: taskDate,
-          childId: child.id,
-          category: newTask.category,
-          recurrence: newTask.recurrence,
-          weekDays: newTask.weekDays,
-          points: newTask.points,
-          priority: newTask.priority
-        }))
+        let createdCount = 0
+        children.forEach(child => {
+          TaskManager.createTask(
+            family.id,
+            child.id,
+            currentUser.id,
+            {
+              title: newTask.title,
+              description: newTask.notes,
+              category: newTask.category as any,
+              points: newTask.points,
+              recurrence: newTask.recurrence,
+              weekDays: newTask.weekDays,
+              dueDate: newTask.date || undefined
+            }
+          )
+          createdCount++
+        })
         
-        const updatedTasks = [...tasks, ...newTasks]
-        setTasks(updatedTasks)
-        // Salvar imediatamente
-        console.log('✅ Criando', newTasks.length, 'tarefas para todos os filhos. Total de tarefas:', updatedTasks.length)
-        localStorage.setItem('organizekids_tasks', JSON.stringify(updatedTasks))
-        
-        const count = children.length
         setToast({ 
-          message: `${count} tarefas criadas com sucesso! 🎉`, 
+          message: `${createdCount} tarefas criadas com sucesso! 🎉`, 
           type: 'success' 
         })
-      } else {
-        // Cria tarefa para filho específico ou sem filho
-        const task: Task = {
-          id: Date.now().toString(),
-          title: newTask.title,
-          subtitle: newTask.notes || undefined,
-          time: newTask.time || '00:00',
-          icon: category?.icon || '📝',
-          color: category?.color || 'bg-blue-400',
-          completed: false,
-          date: taskDate,
-          childId: newTask.childId || undefined,
-          category: newTask.category,
-          recurrence: newTask.recurrence,
-          weekDays: newTask.weekDays,
-          points: newTask.points,
-          priority: newTask.priority
-        }
-
-        const updatedTasks = [...tasks, task]
-        setTasks(updatedTasks)
-        // Salvar imediatamente
-        console.log('✅ Criando 1 tarefa. Total de tarefas:', updatedTasks.length)
-        console.log('📋 Tarefa criada:', task)
-        localStorage.setItem('organizekids_tasks', JSON.stringify(updatedTasks))
+      } else if (newTask.childId) {
+        // Cria tarefa para filho específico usando TaskManager
+        TaskManager.createTask(
+          family.id,
+          newTask.childId,
+          currentUser.id,
+          {
+            title: newTask.title,
+            description: newTask.notes,
+            category: newTask.category as any,
+            points: newTask.points,
+            recurrence: newTask.recurrence,
+            weekDays: newTask.weekDays,
+            dueDate: newTask.date || undefined
+          }
+        )
         
-        setToast({ message: '1 tarefa criada com sucesso! 🎉', type: 'success' })
+        setToast({ message: 'Tarefa criada com sucesso! 🎉', type: 'success' })
+      } else {
+        setToast({ message: 'Selecione um filho para atribuir a tarefa', type: 'error' })
+        return
       }
+
+      // Recarregar tarefas da família
+      const familyTasks = TaskManager.getFamilyTasks(family.id)
+      // Converter para formato Task antigo (temporário)
+      const convertedTasks = familyTasks.map(ft => ({
+        id: ft.id,
+        title: ft.title,
+        subtitle: ft.description,
+        time: '00:00',
+        icon: category?.icon || '📝',
+        color: category?.color || 'bg-blue-400',
+        completed: ft.status === 'approved',
+        date: ft.dueDate,
+        childId: ft.assignedTo,
+        category: ft.category,
+        recurrence: ft.recurrence,
+        weekDays: ft.weekDays,
+        points: ft.points,
+        priority: 'medium' as const
+      }))
+      setTasks(convertedTasks)
     }
 
     // Resetar formulário
@@ -542,6 +580,104 @@ export default function ParentsDashboard() {
       setChildren(updatedChildren)
       // Salvar imediatamente
       localStorage.setItem('organizekids_children', JSON.stringify(updatedChildren))
+    }
+  }
+
+  // Função para aprovar tarefa
+  const handleApproveTask = (taskId: string) => {
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (!currentUser) return
+
+    const success = TaskManager.approveTask(taskId, currentUser.id)
+    if (success) {
+      // Recarregar dados
+      const family = FamilyManager.getUserFamily(currentUser.id)
+      if (family) {
+        const familyTasks = TaskManager.getFamilyTasks(family.id)
+        const convertedTasks = familyTasks.map(ft => ({
+          id: ft.id,
+          title: ft.title,
+          subtitle: ft.description,
+          time: '00:00',
+          icon: taskCategories.find(c => c.id === ft.category)?.icon || '📝',
+          color: taskCategories.find(c => c.id === ft.category)?.color || 'bg-blue-400',
+          completed: ft.status === 'approved',
+          date: ft.dueDate,
+          childId: ft.assignedTo,
+          category: ft.category,
+          recurrence: ft.recurrence,
+          weekDays: ft.weekDays,
+          points: ft.points,
+          priority: 'medium' as const
+        }))
+        setTasks(convertedTasks)
+
+        // Atualizar pontos dos filhos
+        const familyChildren: Child[] = FamilyManager.getChildren(currentUser.id).map(member => {
+          const stats = TaskManager.getChildStats(member.id)
+          return {
+            id: member.id,
+            name: member.name,
+            gender: member.role === 'teenager' ? 'son' : 'son',
+            code: family.code,
+            codeExpires: new Date(family.codeExpires),
+            avatar: member.avatar,
+            tasksCompleted: stats.tasksCompleted,
+            totalPoints: stats.totalPoints
+          }
+        })
+        setChildren(familyChildren)
+      }
+
+      // Mostrar confete
+      const task = tasks.find(t => t.id === taskId)
+      if (task) {
+        setCompletedTaskPoints(task.points)
+        setShowConfetti(true)
+        setTimeout(() => setShowConfetti(false), 3000)
+      }
+
+      setToast({ message: '✅ Tarefa aprovada! Pontos creditados.', type: 'success' })
+    } else {
+      setToast({ message: '❌ Erro ao aprovar tarefa', type: 'error' })
+    }
+  }
+
+  // Função para rejeitar tarefa
+  const handleRejectTask = (taskId: string) => {
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (!currentUser) return
+
+    const reason = prompt('Motivo da rejeição (opcional):')
+    
+    const success = TaskManager.rejectTask(taskId, currentUser.id, reason || undefined)
+    if (success) {
+      // Recarregar dados
+      const family = FamilyManager.getUserFamily(currentUser.id)
+      if (family) {
+        const familyTasks = TaskManager.getFamilyTasks(family.id)
+        const convertedTasks = familyTasks.map(ft => ({
+          id: ft.id,
+          title: ft.title,
+          subtitle: ft.description,
+          time: '00:00',
+          icon: taskCategories.find(c => c.id === ft.category)?.icon || '📝',
+          color: taskCategories.find(c => c.id === ft.category)?.color || 'bg-blue-400',
+          completed: ft.status === 'approved',
+          date: ft.dueDate,
+          childId: ft.assignedTo,
+          category: ft.category,
+          recurrence: ft.recurrence,
+          weekDays: ft.weekDays,
+          points: ft.points,
+          priority: 'medium' as const
+        }))
+        setTasks(convertedTasks)
+      }
+
+      setToast({ message: `🔄 Tarefa rejeitada${reason ? ': ' + reason : ''}`, type: 'info' })
+    } else {
+      setToast({ message: '❌ Erro ao rejeitar tarefa', type: 'error' })
     }
   }
 
@@ -1698,6 +1834,97 @@ export default function ParentsDashboard() {
                   })()}
                 </div>
               </div>
+
+              {/* AGUARDANDO APROVAÇÃO */}
+              {(() => {
+                const currentUser = LocalAuthManager.getCurrentUser()
+                if (!currentUser) return null
+                
+                const family = FamilyManager.getUserFamily(currentUser.id)
+                if (!family) return null
+                
+                const pendingApprovalTasks = TaskManager.getFamilyTasks(family.id, { status: 'completed' })
+                
+                if (pendingApprovalTasks.length === 0) return null
+                
+                return (
+                  <div>
+                    <div className='flex items-center justify-between mb-4'>
+                      <h2 className='text-white text-lg font-bold flex items-center'>
+                        ⏳ AGUARDANDO APROVAÇÃO
+                        <span className='ml-2 px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full'>
+                          {pendingApprovalTasks.length}
+                        </span>
+                      </h2>
+                    </div>
+                    <div className='space-y-3'>
+                      {pendingApprovalTasks.map((task) => {
+                        const child = children.find(c => c.id === task.assignedTo)
+                        const category = taskCategories.find(c => c.id === task.category)
+                        
+                        return (
+                          <div 
+                            key={task.id}
+                            className='bg-yellow-500/10 backdrop-blur-md rounded-2xl p-4 border border-yellow-500/30 shadow-lg shadow-yellow-500/10'
+                          >
+                            <div className='flex items-start justify-between'>
+                              <div className='flex items-start space-x-3 flex-1'>
+                                <div className={`w-10 h-10 ${category?.color || 'bg-blue-400'} rounded-full flex items-center justify-center text-xl`}>
+                                  {category?.icon || '📝'}
+                                </div>
+                                <div className='flex-1'>
+                                  <div className='flex items-center space-x-2'>
+                                    <p className='text-white font-medium'>{task.title}</p>
+                                    <span className='text-yellow-400 text-xs animate-pulse'>⏳</span>
+                                  </div>
+                                  {task.description && (
+                                    <p className='text-white/70 text-sm mt-1'>{task.description}</p>
+                                  )}
+                                  <div className='flex items-center space-x-3 mt-2'>
+                                    {child && (
+                                      <span className='text-cyan-400 text-sm font-medium flex items-center'>
+                                        {child.avatar} {child.name}
+                                      </span>
+                                    )}
+                                    <span className='text-yellow-400 text-sm font-bold'>
+                                      +{task.points} pts
+                                    </span>
+                                    <span className='text-white/50 text-xs'>
+                                      Concluída em {new Date(task.updatedAt).toLocaleDateString('pt-BR')}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className='flex flex-col space-y-2 ml-4'>
+                                <button
+                                  onClick={() => handleApproveTask(task.id)}
+                                  className='px-4 py-2 rounded-lg bg-green-500 hover:bg-green-600 transition-all text-white font-medium text-sm flex items-center space-x-1 shadow-lg'
+                                  title='Aprovar e creditar pontos'
+                                >
+                                  <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+                                  </svg>
+                                  <span>Aprovar</span>
+                                </button>
+                                <button
+                                  onClick={() => handleRejectTask(task.id)}
+                                  className='px-4 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/40 transition-all text-red-400 font-medium text-sm flex items-center space-x-1'
+                                  title='Rejeitar tarefa'
+                                >
+                                  <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                                  </svg>
+                                  <span>Rejeitar</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* Tarefas com Data */}
               {Object.keys(

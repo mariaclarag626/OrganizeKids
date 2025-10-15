@@ -9,6 +9,7 @@ import { StorageManager } from '@/lib/storage'
 import StatsCharts from '@/components/StatsCharts'
 import { LocalAuthManager } from '@/lib/localAuth'
 import { FamilyManager } from '@/lib/familyManager'
+import { TaskManager } from '@/lib/taskManager'
 
 type TabType = 'tasks' | 'calendar' | 'pomodoro' | 'routines' | 'stats'
 
@@ -183,16 +184,39 @@ export default function TeenagersDashboard() {
 
   // Load data from localStorage on mount
   useEffect(() => {
-    const userId = 'teenager-1' // TODO: Get from session/auth
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (!currentUser) {
+      router.push('/signup')
+      return
+    }
     
-    const savedTasks = StorageManager.load(userId, 'tasks', tasks)
+    const userId = currentUser.id
+    
+    // Carregar tarefas atribuídas ao filho usando TaskManager
+    const pendingTasks = TaskManager.getChildTasks(userId, { status: 'pending' })
+    const completedTasks = TaskManager.getChildTasks(userId, { status: 'completed' })
+    const assignedTasks = [...pendingTasks, ...completedTasks]
+    const convertedTasks: Task[] = assignedTasks.map(t => ({
+      id: t.id,
+      title: t.title,
+      category: 'pessoal' as 'estudos' | 'saude' | 'domestico' | 'lazer' | 'pessoal',
+      subject: undefined,
+      status: t.status === 'approved' ? 'completed' : t.status === 'completed' ? 'in-progress' : 'todo',
+      points: t.points,
+      deadline: t.dueDate ? new Date(t.dueDate) : undefined
+    }))
+    setTasks(convertedTasks)
+    
+    // Carregar pontos totais usando TaskManager
+    const points = TaskManager.getChildPoints(userId)
+    setTotalPoints(points)
+    
+    // Carregar outros dados do StorageManager (legado)
     const savedRoutines = StorageManager.load(userId, 'routines', routines)
     const savedEvents = StorageManager.load(userId, 'events', calendarEvents)
-    const savedPoints = StorageManager.load(userId, 'totalPoints', totalPoints)
     const savedPomodoroStats = StorageManager.load(userId, 'pomodoroStats', pomodoroStats)
     const savedRewards = StorageManager.load(userId, 'rewards', rewards)
     
-    setTasks(savedTasks)
     setRoutines(savedRoutines.map((r: any) => ({
       ...r,
       completedTasks: new Set(r.completedTasks || [])
@@ -201,9 +225,11 @@ export default function TeenagersDashboard() {
       ...e,
       date: new Date(e.date)
     })))
-    setTotalPoints(savedPoints)
     setPomodoroStats(savedPomodoroStats)
     setRewards(savedRewards)
+    
+    console.log('📥 Carregando tarefas atribuídas:', convertedTasks.length, 'tarefa(s)')
+    console.log('💰 Pontos totais:', points)
   }, [])
 
   // Auto-save tasks
@@ -308,34 +334,36 @@ export default function TeenagersDashboard() {
   }
 
   const toggleTaskStatus = (taskId: string, newStatus: 'todo' | 'in-progress' | 'completed') => {
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (!currentUser) return
+    
     const task = tasks.find(t => t.id === taskId)
     if (!task) return
     
-    setTasks(tasks.map(t => {
-      if (t.id === taskId) {
-        const oldStatus = t.status
-        
-        // GANHAR PONTOS: Se mudou para completed
-        if (newStatus === 'completed' && oldStatus !== 'completed' && t.points > 0) {
-          setTotalPoints(prev => prev + t.points)
-          showToast(`🎉 Parabéns! +${t.points} pontos`, 'success')
-        }
-        
-        // PERDER PONTOS: Se estava completed e mudou para qualquer outro status
-        else if (oldStatus === 'completed' && newStatus !== 'completed' && t.points > 0) {
-          setTotalPoints(prev => prev - t.points)
-          showToast(`⚠️ Tarefa não concluída. -${t.points} pontos`, 'warning')
-        }
-        
-        // Mensagens de status
-        if (newStatus === 'in-progress' && oldStatus === 'todo') {
-          showToast(`▶️ "${t.title}" em progresso!`, 'info')
-        }
-        
-        return { ...t, status: newStatus }
+    // Se marcar como concluída (completed), chama TaskManager.completeTask
+    if (newStatus === 'completed' && task.status !== 'completed') {
+      const success = TaskManager.completeTask(taskId, currentUser.id)
+      if (success) {
+        setTasks(tasks.map(t => 
+          t.id === taskId ? { ...t, status: 'in-progress' } : t // 'in-progress' representa 'completed' aguardando aprovação
+        ))
+        showToast(`✅ Tarefa "${task.title}" marcada como concluída! Aguardando aprovação dos pais.`, 'success')
+      } else {
+        showToast('❌ Erro ao marcar tarefa como concluída', 'error')
       }
-      return t
-    }))
+    } 
+    // Se desmarcar (completed → outro status), apenas muda visualmente
+    else {
+      setTasks(tasks.map(t => {
+        if (t.id === taskId) {
+          if (newStatus === 'in-progress' && task.status === 'todo') {
+            showToast(`▶️ "${t.title}" em progresso!`, 'info')
+          }
+          return { ...t, status: newStatus }
+        }
+        return t
+      }))
+    }
   }
 
   const openEditTask = (task: Task) => {
