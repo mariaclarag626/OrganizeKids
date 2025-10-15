@@ -233,9 +233,9 @@ export default function KidsDashboard() {
       return
     }
 
-    // Garantir que é teenager ou kid
-    if (currentUser.role !== 'teenager' && currentUser.role !== 'kid') {
-      setCelebrationMessage('Apenas crianças podem se conectar')
+    // Validação: se for parent, não pode usar este dashboard
+    if (currentUser.role === 'parent') {
+      setCelebrationMessage('Você está no lugar errado!')
       return
     }
 
@@ -244,7 +244,7 @@ export default function KidsDashboard() {
       currentUser.id,
       currentUser.email,
       currentUser.name,
-      currentUser.role
+      currentUser.role as 'teenager' | 'kid'
     )
 
     if (result.success) {

@@ -556,9 +556,9 @@ export default function TeenagersDashboard() {
       return
     }
 
-    // Garantir que é teenager ou kid
-    if (currentUser.role !== 'teenager' && currentUser.role !== 'kid') {
-      showToast('Apenas crianças e adolescentes podem se conectar', 'error')
+    // Validação: se for parent, não pode usar este dashboard
+    if (currentUser.role === 'parent') {
+      showToast('Você está no dashboard errado! Pais devem criar a família no dashboard de pais.', 'error')
       return
     }
 
@@ -567,7 +567,7 @@ export default function TeenagersDashboard() {
       currentUser.id,
       currentUser.email,
       currentUser.name,
-      currentUser.role
+      currentUser.role as 'teenager' | 'kid'
     )
 
     if (result.success) {
