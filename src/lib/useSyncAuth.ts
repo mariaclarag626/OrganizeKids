@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useEffect } from 'react'
-import { LocalAuthManager } from './localAuth'
+import { LocalAuthManager, LocalUser } from './localAuth'
 
 export function useSyncAuth() {
   const { data: session, status } = useSession()
@@ -10,7 +10,7 @@ export function useSyncAuth() {
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
       // Sincronizar usuário do Google/Facebook com localStorage
-      const userData = {
+      const userData: LocalUser = {
         id: session.user.id || Date.now().toString(),
         email: session.user.email || '',
         name: session.user.name || '',
@@ -20,19 +20,21 @@ export function useSyncAuth() {
       }
 
       // Verificar se já existe
-      const users = JSON.parse(localStorage.getItem('organizekids_users') || '[]')
-      const existingUserIndex = users.findIndex((u: any) => u.email === userData.email)
+      const users = LocalAuthManager.getAllUsers()
+      const existingUserIndex = users.findIndex(u => u.email === userData.email)
 
       if (existingUserIndex >= 0) {
-        // Atualizar usuário existente
-        users[existingUserIndex] = { ...users[existingUserIndex], ...userData }
+        // Atualizar usuário existente (mantém o role se já escolheu)
+        const existingUser = users[existingUserIndex]
+        users[existingUserIndex] = { ...existingUser, ...userData, role: existingUser.role }
+        localStorage.setItem('organizekids_users', JSON.stringify(users))
+        LocalAuthManager.setCurrentUser(users[existingUserIndex])
       } else {
         // Adicionar novo usuário
         users.push(userData)
+        localStorage.setItem('organizekids_users', JSON.stringify(users))
+        LocalAuthManager.setCurrentUser(userData)
       }
-
-      localStorage.setItem('organizekids_users', JSON.stringify(users))
-      localStorage.setItem('organizekids_current_user', JSON.stringify(userData))
     }
   }, [session, status])
 
