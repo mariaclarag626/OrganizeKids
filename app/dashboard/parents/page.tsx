@@ -496,9 +496,8 @@ export default function ParentsDashboard() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('user_email')
-    localStorage.removeItem('user_type')
-    router.push('/')
+    LocalAuthManager.logout()
+    router.push('/login')
   }
 
   // Função para completar tarefa com animação
@@ -1422,21 +1421,6 @@ export default function ParentsDashboard() {
             )}
           </div>
           <div className='flex items-center space-x-2'>
-            <button
-              onClick={() => {
-                LocalAuthManager.logout()
-                router.push('/login')
-              }}
-              className='px-4 py-2 backdrop-blur-md rounded-xl flex items-center space-x-2 border border-red-400/30 hover:shadow-lg transition-all'
-              style={{
-                background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.3) 100%)'
-              }}
-              title="Sair"
-            >
-              <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1' />
-              </svg>
-            </button>
             <button
               onClick={() => setShowMembersModal(true)}
               className='px-4 py-2 backdrop-blur-md rounded-xl flex items-center space-x-2 border border-white/30 hover:shadow-lg transition-all'

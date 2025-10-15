@@ -7,6 +7,7 @@ import { notificationManager } from '@/lib/notifications'
 import Toast from '@/components/Toast'
 import { StorageManager } from '@/lib/storage'
 import StatsCharts from '@/components/StatsCharts'
+import { LocalAuthManager } from '@/lib/localAuth'
 
 type TabType = 'tasks' | 'calendar' | 'pomodoro' | 'routines' | 'stats'
 
@@ -537,9 +538,8 @@ export default function TeenagersDashboard() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('user_email')
-    localStorage.removeItem('user_type')
-    router.push('/')
+    LocalAuthManager.logout()
+    router.push('/login')
   }
 
   // Auto-reset subject filter when leaving estudos
