@@ -561,15 +561,26 @@ export default function ParentsDashboard() {
   })
 
   return (
-    <div 
-      className='min-h-screen relative overflow-hidden'
-      style={{
-        backgroundImage: 'url(/space-background-new.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
+    <div className='min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden'>
+      {/* Animated stars background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 50 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute rounded-full bg-white animate-pulse"
+            style={{
+              width: `${Math.random() * 3}px`,
+              height: `${Math.random() * 3}px`,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 3}s`,
+              opacity: Math.random() * 0.7
+            }}
+          />
+        ))}
+      </div>
+
       {/* Toast Notification */}
       {toast && (
         <Toast 
@@ -578,14 +589,6 @@ export default function ParentsDashboard() {
           onClose={() => setToast(null)}
         />
       )}
-
-      {/* Gradient overlay */}
-      <div 
-        className='absolute inset-0'
-        style={{
-          background: 'linear-gradient(135deg, rgba(27, 3, 55, 0.45) 0%, rgba(18, 3, 38, 0.55) 100%)',
-        }}
-      />
 
       {/* Animação de Confete */}
       {showConfetti && (
