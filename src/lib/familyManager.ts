@@ -100,19 +100,19 @@ export class FamilyManager {
   }
 
   // Renovar código (quando expirar)
-  static renewCode(parentId: string): string {
-    if (typeof window === 'undefined') return ''
+  static renewCode(parentId: string): Family | null {
+    if (typeof window === 'undefined') return null
 
     const families = this.getAllFamilies()
     const family = families.find(f => f.parentId === parentId)
 
-    if (!family) return ''
+    if (!family) return null
 
     family.code = this.generateCode()
     family.codeExpires = Date.now() + (this.CODE_EXPIRY_HOURS * 60 * 60 * 1000)
     
     this.saveFamilies(families)
-    return family.code
+    return family
   }
 
   // Pegar família do usuário
