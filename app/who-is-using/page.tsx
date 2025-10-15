@@ -17,12 +17,15 @@ export default function WhoIsUsingPage() {
 
   useEffect(() => {
     const currentUser = LocalAuthManager.getCurrentUser()
+    console.log('🔍 Who-is-using: Verificando usuário atual:', currentUser)
     
     if (!currentUser) {
+      console.log('❌ Who-is-using: Nenhum usuário encontrado, redirecionando para /')
       router.push('/')
       return
     }
 
+    console.log('✅ Who-is-using: Usuário encontrado!', currentUser)
     setUserName(currentUser.name)
     setUserRole(currentUser.role)
     

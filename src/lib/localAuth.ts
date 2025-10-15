@@ -59,6 +59,9 @@ export class LocalAuthManager {
 
     users.push(newUser)
     this.saveUsers(users)
+    
+    // Fazer login automático após criar a conta
+    this.setCurrentUser(newUser)
 
     return { 
       success: true, 

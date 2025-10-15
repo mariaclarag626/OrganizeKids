@@ -44,8 +44,10 @@ export default function LoginPage() {
         console.log('📧 Email:', email)
         console.log('👤 User data:', result.user)
         
-        // Redirecionar para /who-is-using para escolher o papel
-        router.push('/who-is-using')
+        // Redirecionar DIRETO para o dashboard específico (pula who-is-using)
+        const dashboardRoute = LocalAuthManager.getDashboardRoute(result.user.role)
+        console.log('🔄 Redirecionando para:', dashboardRoute)
+        router.push(dashboardRoute)
       } else {
         console.log('❌ Login falhou:', result.message)
         setError(result.message)

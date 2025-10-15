@@ -87,17 +87,33 @@ function SignUpForm() {
       console.log('📊 Resultado do registro:', result)
 
       if (result.success && result.user) {
-        console.log('✅ Conta criada com sucesso! Redirecionando para who-is-using...')
-        // Ir para who-is-using para visualização de 3 segundos
-        router.push('/who-is-using')
+        console.log('✅ Conta criada com sucesso!')
+        console.log('👤 Usuário:', result.user)
+        
+        // Verificar se foi salvo no localStorage
+        const savedUser = LocalAuthManager.getCurrentUser()
+        console.log('💾 Usuário salvo no localStorage:', savedUser)
+        
+        if (savedUser) {
+          console.log('🔄 Redirecionando para who-is-using...')
+          // Pequeno delay e redirecionar
+          setTimeout(() => {
+            router.push('/who-is-using')
+          }, 100)
+        } else {
+          console.error('❌ Erro: Usuário não foi salvo no localStorage!')
+          setError('Erro ao salvar dados. Tente novamente.')
+          setLoading(false)
+        }
+        return
       } else {
         console.log('❌ Erro ao criar conta:', result.message)
         setError(result.message || 'Erro ao criar conta')
+        setLoading(false)
       }
     } catch (err) {
       console.error('❌ Erro no try/catch:', err)
       setError('Erro ao conectar com o servidor')
-    } finally {
       setLoading(false)
     }
   }
