@@ -33,18 +33,19 @@ export class FamilyManager {
     return code
   }
 
-  // Criar família (quando pai se cadastra)
+    // Criar família (pai)
   static createFamily(parentId: string, parentEmail: string, parentName: string): Family {
     if (typeof window === 'undefined') return {} as Family
 
     const families = this.getAllFamilies()
     
-    // Verificar se já tem família
-    const existingFamily = families.find(f => f.parentId === parentId)
-    if (existingFamily) return existingFamily
+    // Verificar se já existe
+    let family = families.find(f => f.parentId === parentId)
+    if (family) return family
 
-    const family: Family = {
-      id: Date.now().toString(),
+    // Criar nova família
+    family = {
+      id: `family-${Date.now()}`,
       code: this.generateCode(),
       codeExpires: Date.now() + (this.CODE_EXPIRY_HOURS * 60 * 60 * 1000),
       parentId,
