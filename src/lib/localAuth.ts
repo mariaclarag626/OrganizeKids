@@ -9,9 +9,15 @@ export interface LocalUser {
   createdAt: string
 }
 
+interface SessionData {
+  user: LocalUser
+  timestamp: number
+}
+
 export class LocalAuthManager {
   private static USERS_KEY = 'organizekids_users'
   private static CURRENT_USER_KEY = 'organizekids_current_user'
+  private static SESSION_DURATION = 60 * 60 * 1000 // 1 hora em millisegundos
 
   // Get all users
   static getAllUsers(): LocalUser[] {
@@ -98,14 +104,48 @@ export class LocalAuthManager {
     }
   }
 
-  // Set current user
+  // Set current user with session
   static setCurrentUser(user: LocalUser): void {
     if (typeof window === 'undefined') return
-    localStorage.setItem(this.CURRENT_USER_KEY, JSON.stringify(user))
+    const sessionData: SessionData = {
+      user,
+      timestamp: Date.now()
+    }
+    localStorage.setItem(this.CURRENT_USER_KEY, JSON.stringify(sessionData))
   }
 
-  // Get current user
+  // Get current user (verifica expiração da sessão)
   static getCurrentUser(): LocalUser | null {
+    if (typeof window === 'undefined') return null
+    
+    const data = localStorage.getItem(this.CURRENT_USER_KEY)
+    if (!data) return null
+    
+    try {
+      const sessionData: SessionData = JSON.parse(data)
+      
+      // Verificar se a sessão expirou (1 hora)
+      const now = Date.now()
+      const timePassed = now - sessionData.timestamp
+      
+      if (timePassed > this.SESSION_DURATION) {
+        console.log('⏰ Sessão expirada! Fazendo logout...')
+        this.logout()
+        return null
+      }
+      
+      // Renovar timestamp (manter ativo enquanto usa)
+      sessionData.timestamp = now
+      localStorage.setItem(this.CURRENT_USER_KEY, JSON.stringify(sessionData))
+      
+      return sessionData.user
+    } catch {
+      return null
+    }
+  }
+
+  // Get current user (DEPRECATED - mantido por compatibilidade)
+  static getCurrentUserOld(): LocalUser | null {
     if (typeof window === 'undefined') return null
     const user = localStorage.getItem(this.CURRENT_USER_KEY)
     return user ? JSON.parse(user) : null
