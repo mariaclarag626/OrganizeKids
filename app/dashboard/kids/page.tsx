@@ -233,6 +233,12 @@ export default function KidsDashboard() {
       return
     }
 
+    // Garantir que é teenager ou kid
+    if (currentUser.role !== 'teenager' && currentUser.role !== 'kid') {
+      setCelebrationMessage('Apenas crianças podem se conectar')
+      return
+    }
+
     const result = FamilyManager.joinFamily(
       familyCode.toUpperCase(),
       currentUser.id,
@@ -249,7 +255,7 @@ export default function KidsDashboard() {
       setShowConfetti(true)
       setTimeout(() => setShowConfetti(false), 3000)
     } else {
-      setCelebrationMessage(result.error || 'Erro ao conectar')
+      setCelebrationMessage(result.message || 'Erro ao conectar')
     }
   }
 

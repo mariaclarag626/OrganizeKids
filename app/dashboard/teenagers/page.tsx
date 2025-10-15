@@ -556,6 +556,12 @@ export default function TeenagersDashboard() {
       return
     }
 
+    // Garantir que é teenager ou kid
+    if (currentUser.role !== 'teenager' && currentUser.role !== 'kid') {
+      showToast('Apenas crianças e adolescentes podem se conectar', 'error')
+      return
+    }
+
     const result = FamilyManager.joinFamily(
       familyCode.toUpperCase(),
       currentUser.id,
@@ -570,7 +576,7 @@ export default function TeenagersDashboard() {
       setFamilyCode('')
       showToast('✅ Conectado à família com sucesso!', 'success')
     } else {
-      showToast(`❌ ${result.error}`, 'error')
+      showToast(`❌ ${result.message}`, 'error')
     }
   }
 
