@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Toast from '@/components/Toast'
 import { LocalAuthManager } from '@/lib/localAuth'
+import { FamilyManager } from '@/lib/familyManager'
 
 interface Task {
   id: string
@@ -176,7 +177,6 @@ export default function ParentsDashboard() {
   // LocalStorage - Carregar dados ao montar
   useEffect(() => {
     const savedTasks = localStorage.getItem('organizekids_tasks')
-    const savedChildren = localStorage.getItem('organizekids_children')
     const savedRewards = localStorage.getItem('organizekids_rewards')
     const savedRoutines = localStorage.getItem('organizekids_routines')
 
@@ -185,13 +185,35 @@ export default function ParentsDashboard() {
       console.log('📥 Carregando tarefas do localStorage:', parsed.length, 'tarefas')
       setTasks(parsed)
     }
-    if (savedChildren) {
-      const parsed = JSON.parse(savedChildren)
-      console.log('📥 Carregando filhos do localStorage:', parsed.length, 'filhos')
-      setChildren(parsed)
-    }
     if (savedRewards) setRewards(JSON.parse(savedRewards))
     if (savedRoutines) setRoutines(JSON.parse(savedRoutines))
+
+    // Carregar família do FamilyManager
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (currentUser) {
+      let family = FamilyManager.getUserFamily(currentUser.id)
+      
+      // Se não existe família, cria uma nova
+      if (!family) {
+        family = FamilyManager.createFamily(currentUser.id, currentUser.email, currentUser.name)
+        console.log('✅ Família criada com código:', family.code)
+      }
+
+      // Converte membros da família para formato Child
+      const familyChildren: Child[] = FamilyManager.getChildren(currentUser.id).map(member => ({
+        id: member.id,
+        name: member.name,
+        gender: member.role === 'teenager' ? 'son' : 'son', // Simplificado
+        code: family!.code,
+        codeExpires: new Date(family!.codeExpires),
+        avatar: member.avatar,
+        tasksCompleted: 0, // TODO: calcular do histórico
+        totalPoints: 0 // TODO: calcular do histórico
+      }))
+
+      setChildren(familyChildren)
+      console.log('📥 Carregando família:', familyChildren.length, 'filho(s)')
+    }
   }, [])
 
   // LocalStorage - Salvar dados quando mudam (com flag para evitar salvar na primeira renderização)
@@ -203,11 +225,6 @@ export default function ParentsDashboard() {
     console.log('💾 Salvando tarefas no localStorage:', tasks.length, 'tarefas')
     localStorage.setItem('organizekids_tasks', JSON.stringify(tasks))
   }, [tasks])
-
-  useEffect(() => {
-    if (!isInitialized) return
-    localStorage.setItem('organizekids_children', JSON.stringify(children))
-  }, [children])
 
   useEffect(() => {
     if (!isInitialized) return
@@ -430,64 +447,61 @@ export default function ParentsDashboard() {
 
   // Função para deletar filho
   const handleDeleteChild = (childId: string) => {
-    const updatedChildren = children.filter(c => c.id !== childId)
-    setChildren(updatedChildren)
-    // Salvar imediatamente
-    localStorage.setItem('organizekids_children', JSON.stringify(updatedChildren))
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (!currentUser) return
+
+    // Remove do FamilyManager
+    FamilyManager.removeMember(currentUser.id, childId)
     
     // Remove tarefas do filho também
     const updatedTasks = tasks.filter(t => t.childId !== childId)
     setTasks(updatedTasks)
-    // Salvar imediatamente
     localStorage.setItem('organizekids_tasks', JSON.stringify(updatedTasks))
+    
+    // Atualiza lista de children
+    const familyChildren = FamilyManager.getChildren(currentUser.id).map(member => {
+      const family = FamilyManager.getUserFamily(currentUser.id)
+      return {
+        id: member.id,
+        name: member.name,
+        gender: member.role === 'teenager' ? 'son' : 'son' as 'son' | 'daughter',
+        code: family!.code,
+        codeExpires: new Date(family!.codeExpires),
+        avatar: member.avatar,
+        tasksCompleted: 0,
+        totalPoints: 0
+      }
+    })
+    setChildren(familyChildren)
     
     setToast({ message: 'Filho removido com sucesso!', type: 'success' })
     setConfirmDelete(null)
   }
 
-  const generateCode = () => {
-    const timestamp = Date.now().toString(36).toUpperCase()
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase()
-    return `PLANET-${timestamp}-${random}`
-  }
+  const regenerateCode = () => {
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (!currentUser) return
 
-  const handleAddChild = () => {
-    if (!newChildName.trim()) {
-      setToast({ message: 'Por favor, adicione um nome para o filho', type: 'error' })
+    const family = FamilyManager.renewCode(currentUser.id)
+    if (!family) {
+      setToast({ message: 'Erro ao renovar código', type: 'error' })
       return
     }
 
-    const newChild: Child = {
-      id: Date.now().toString(),
-      name: newChildName,
-      gender: newChildGender,
-      code: generateCode(),
-      codeExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    // Atualiza os children com o novo código
+    const familyChildren = FamilyManager.getChildren(currentUser.id).map(member => ({
+      id: member.id,
+      name: member.name,
+      gender: member.role === 'teenager' ? 'son' : 'son' as 'son' | 'daughter',
+      code: family.code,
+      codeExpires: new Date(family.codeExpires),
+      avatar: member.avatar,
       tasksCompleted: 0,
       totalPoints: 0
-    }
-
-    const updatedChildren = [...children, newChild]
-    setChildren(updatedChildren)
-    // Salvar imediatamente
-    localStorage.setItem('organizekids_children', JSON.stringify(updatedChildren))
+    }))
+    setChildren(familyChildren)
     
-    setNewChildName('')
-    setNewChildGender('son')
-    setToast({ message: `${newChildName} adicionado com sucesso! 🎉`, type: 'success' })
-  }
-
-  const regenerateCode = (childId: string) => {
-    const updatedChildren = children.map(child => 
-      child.id === childId 
-        ? { ...child, code: generateCode(), codeExpires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) }
-        : child
-    )
-    setChildren(updatedChildren)
-    // Salvar imediatamente
-    localStorage.setItem('organizekids_children', JSON.stringify(updatedChildren))
-    
-    setToast({ message: 'Código regenerado com sucesso!', type: 'success' })
+    setToast({ message: 'Código renovado com sucesso!', type: 'success' })
   }
 
   const copyCode = (code: string) => {
@@ -650,135 +664,101 @@ export default function ParentsDashboard() {
               </button>
             </div>
 
+            {/* Código da Família */}
+            {(() => {
+              const currentUser = LocalAuthManager.getCurrentUser()
+              const family = currentUser ? FamilyManager.getUserFamily(currentUser.id) : null
+              const isExpired = family ? new Date(family.codeExpires) < new Date() : false
+              
+              return family ? (
+                <div className='bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-2xl p-6 mb-6 border border-cyan-400/30'>
+                  <h3 className='text-white font-bold text-lg mb-3 flex items-center'>
+                    🔑 Código da Família
+                    {isExpired && <span className='ml-2 text-xs bg-red-500 px-2 py-1 rounded-full'>Expirado</span>}
+                  </h3>
+                  <p className='text-white/70 text-sm mb-4'>
+                    Compartilhe este código com seus filhos para que eles possam conectar suas contas
+                  </p>
+                  <div className='flex items-center space-x-2 mb-3'>
+                    <code className='flex-1 bg-black/30 px-4 py-3 rounded-xl text-cyan-400 font-mono text-lg font-bold text-center'>
+                      {family.code}
+                    </code>
+                    <button
+                      onClick={() => copyCode(family.code)}
+                      className='p-3 bg-white/10 rounded-xl hover:bg-white/20 transition-all'
+                      title='Copiar código'
+                    >
+                      <svg className='w-6 h-6 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z' />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => regenerateCode()}
+                      className='px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl hover:scale-105 transition-all flex items-center space-x-2'
+                      title='Gerar novo código'
+                    >
+                      <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
+                      </svg>
+                      <span className='text-white font-medium'>Renovar</span>
+                    </button>
+                  </div>
+                  <div className='text-white/60 text-xs'>
+                    {isExpired ? (
+                      <span className='text-red-400'>⚠️ Código expirado. Clique em renovar para gerar um novo.</span>
+                    ) : (
+                      <span>Expira em: {new Date(family.codeExpires).toLocaleDateString()} às {new Date(family.codeExpires).toLocaleTimeString()}</span>
+                    )}
+                  </div>
+                </div>
+              ) : null
+            })()}
+
             {/* Lista de Filhos */}
             <div className='space-y-4 mb-6'>
-              {children.map(child => (
-                <div 
-                  key={child.id}
-                  className='bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20'
-                >
-                  <div className='flex items-center justify-between mb-3'>
-                    <div className='flex items-center space-x-3'>
-                      <div className='text-3xl'>{child.gender === 'son' ? '👦' : '👧'}</div>
-                      <div>
-                        <h3 className='text-white font-bold text-lg'>{child.name}</h3>
-                        <p className='text-white/70 text-sm'>
-                          {child.tasksCompleted} tarefas • {child.totalPoints} pontos
-                        </p>
+              <h3 className='text-white font-bold text-lg mb-3'>
+                Filhos Conectados ({children.length})
+              </h3>
+              {children.length === 0 ? (
+                <div className='text-center py-8 text-white/50'>
+                  <div className='text-6xl mb-4'>👨‍👧‍👦</div>
+                  <p className='text-lg'>Nenhum filho conectado ainda</p>
+                  <p className='text-sm mt-2'>Compartilhe o código acima para conectar seus filhos!</p>
+                </div>
+              ) : (
+                children.map(child => (
+                  <div 
+                    key={child.id}
+                    className='bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20'
+                  >
+                    <div className='flex items-center justify-between'>
+                      <div className='flex items-center space-x-3'>
+                        <div className='text-3xl'>{child.avatar || '👦'}</div>
+                        <div>
+                          <h3 className='text-white font-bold text-lg'>{child.name}</h3>
+                          <p className='text-white/70 text-sm'>
+                            {child.tasksCompleted} tarefas • {child.totalPoints} pontos
+                          </p>
+                        </div>
+                      </div>
+                      <div className='flex items-center space-x-2'>
+                        <button
+                          onClick={() => setConfirmDelete({ type: 'child', id: child.id })}
+                          className='w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110'
+                          style={{
+                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+                          }}
+                          title='Remover filho'
+                        >
+                          <svg className='w-4 h-4 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
+                          </svg>
+                        </button>
                       </div>
                     </div>
-                    <div className='flex items-center space-x-2'>
-                      <button
-                        onClick={() => setConfirmDelete({ type: 'child', id: child.id })}
-                        className='w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-110'
-                        style={{
-                          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
-                        }}
-                        title='Deletar filho'
-                      >
-                        <svg className='w-4 h-4 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => setSelectedChild(selectedChild === child.id ? null : child.id)}
-                        className='px-4 py-2 rounded-xl text-sm font-medium transition-all'
-                        style={{
-                          background: selectedChild === child.id 
-                            ? 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 100%)'
-                            : 'rgba(255,255,255,0.1)',
-                          color: 'white'
-                        }}
-                      >
-                        {selectedChild === child.id ? 'Vendo perfil' : 'Ver perfil'}
-                      </button>
-                    </div>
                   </div>
-
-                  <div className='bg-black/20 rounded-xl p-3'>
-                    <div className='flex items-center justify-between mb-2'>
-                      <span className='text-white/70 text-sm'>Código de Acesso:</span>
-                      <span className='text-white/50 text-xs'>
-                        Expira: {new Date(child.codeExpires).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className='flex items-center space-x-2'>
-                      <code className='flex-1 bg-black/30 px-3 py-2 rounded-lg text-cyan-400 font-mono text-sm'>
-                        {child.code}
-                      </code>
-                      <button
-                        onClick={() => copyCode(child.code)}
-                        className='p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-all'
-                        title='Copiar código'
-                      >
-                        <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z' />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => regenerateCode(child.id)}
-                        className='p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-all'
-                        title='Gerar novo código'
-                      >
-                        <svg className='w-5 h-5 text-white' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                          <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Adicionar novo filho */}
-            <div className='border-t border-white/20 pt-6'>
-              <h3 className='text-white font-bold mb-4'>Adicionar Novo Filho</h3>
-              <div className='space-y-4'>
-                <input
-                  type='text'
-                  placeholder='Nome do filho'
-                  value={newChildName}
-                  onChange={(e) => setNewChildName(e.target.value)}
-                  className='w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/50'
-                />
-                <div className='flex space-x-3'>
-                  <button
-                    onClick={() => setNewChildGender('son')}
-                    className='flex-1 py-3 rounded-xl font-medium transition-all'
-                    style={{
-                      background: newChildGender === 'son' 
-                        ? 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 100%)'
-                        : 'rgba(255,255,255,0.1)',
-                      color: 'white'
-                    }}
-                  >
-                    👦 Filho
-                  </button>
-                  <button
-                    onClick={() => setNewChildGender('daughter')}
-                    className='flex-1 py-3 rounded-xl font-medium transition-all'
-                    style={{
-                      background: newChildGender === 'daughter' 
-                        ? 'linear-gradient(135deg, #FF6B9D 0%, #C06C84 100%)'
-                        : 'rgba(255,255,255,0.1)',
-                      color: 'white'
-                    }}
-                  >
-                    👧 Filha
-                  </button>
-                </div>
-                <button
-                  onClick={handleAddChild}
-                  disabled={!newChildName.trim()}
-                  className='w-full py-4 rounded-xl text-white font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed'
-                  style={{
-                    background: 'linear-gradient(135deg, #5FB6D9 0%, #417FA6 100%)',
-                    boxShadow: '0 4px 15px rgba(95, 182, 217, 0.4)'
-                  }}
-                >
-                  Adicionar Filho
-                </button>
-              </div>
+                ))
+              )}
             </div>
           </div>
         </div>

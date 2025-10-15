@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { FamilyManager } from '@/lib/familyManager'
+import { LocalAuthManager } from '@/lib/localAuth'
 
 // Temas disponíveis para personalização
 const THEMES = {
@@ -84,6 +86,11 @@ export default function KidsDashboard() {
     description: '',
     points: 10,
   })
+
+  // Family Connection States
+  const [showJoinFamilyModal, setShowJoinFamilyModal] = useState(false)
+  const [familyCode, setFamilyCode] = useState('')
+  const [isConnectedToFamily, setIsConnectedToFamily] = useState(false)
 
   useEffect(() => {
     // Initialize with mock data immediately
@@ -213,6 +220,48 @@ export default function KidsDashboard() {
     setTimeout(() => setShowConfetti(false), 2000)
   }
 
+  // Family Connection Functions
+  const handleJoinFamily = () => {
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (!currentUser) {
+      setCelebrationMessage('Erro ao conectar')
+      return
+    }
+
+    if (!familyCode.trim() || familyCode.length !== 6) {
+      setCelebrationMessage('Código inválido')
+      return
+    }
+
+    const result = FamilyManager.joinFamily(
+      familyCode.toUpperCase(),
+      currentUser.id,
+      currentUser.email,
+      currentUser.name,
+      currentUser.role
+    )
+
+    if (result.success) {
+      setIsConnectedToFamily(true)
+      setShowJoinFamilyModal(false)
+      setFamilyCode('')
+      setCelebrationMessage('Conectado! 🎉')
+      setShowConfetti(true)
+      setTimeout(() => setShowConfetti(false), 3000)
+    } else {
+      setCelebrationMessage(result.error || 'Erro ao conectar')
+    }
+  }
+
+  // Check if user is connected to a family
+  useEffect(() => {
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (currentUser) {
+      const family = FamilyManager.getUserFamily(currentUser.id)
+      setIsConnectedToFamily(!!family)
+    }
+  }, [])
+
   const theme = THEMES[currentTheme]
 
   if (loading) {
@@ -307,11 +356,31 @@ export default function KidsDashboard() {
               <p className="text-white/80 text-sm">Suas tarefas de hoje</p>
             </div>
           </div>
-          <div className="bg-white/20 px-6 py-3 rounded-xl backdrop-blur-sm">
-            <div className="text-white/70 text-xs font-medium mb-1">Pontos</div>
-            <div className="text-white text-2xl font-bold flex items-center gap-1">
-              <span>⭐</span>
-              {points}
+          <div className="flex items-center gap-4">
+            {/* Family Connection Status */}
+            {!isConnectedToFamily && (
+              <button
+                onClick={() => setShowJoinFamilyModal(true)}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-400 hover:from-cyan-500 hover:to-blue-500 text-white font-bold transition-all transform hover:scale-105 flex items-center gap-2 shadow-lg animate-pulse"
+              >
+                <span className="text-xl">👨‍👩‍👧‍👦</span>
+                <span className="text-sm">Conectar</span>
+              </button>
+            )}
+            {isConnectedToFamily && (
+              <div className="px-4 py-2 rounded-xl bg-white/20 backdrop-blur-sm flex items-center gap-2">
+                <span className="text-xl">👨‍👩‍👧‍👦</span>
+                <span className="text-sm text-white font-medium">Família</span>
+              </div>
+            )}
+            
+            {/* Points Display */}
+            <div className="bg-white/20 px-6 py-3 rounded-xl backdrop-blur-sm">
+              <div className="text-white/70 text-xs font-medium mb-1">Pontos</div>
+              <div className="text-white text-2xl font-bold flex items-center gap-1">
+                <span>⭐</span>
+                {points}
+              </div>
             </div>
           </div>
         </div>
@@ -649,6 +718,69 @@ export default function KidsDashboard() {
           </div>
         )}
       </div>
+
+      {/* Join Family Modal */}
+      {showJoinFamilyModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-purple-400 to-pink-400 rounded-3xl shadow-2xl max-w-md w-full p-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-3xl font-bold text-white flex items-center gap-2">
+                <span className="text-4xl">👨‍👩‍👧‍👦</span>
+                Conectar
+              </h3>
+              <button
+                onClick={() => {
+                  setShowJoinFamilyModal(false)
+                  setFamilyCode('')
+                }}
+                className="text-white/70 hover:text-white text-3xl w-10 h-10 flex items-center justify-center bg-white/20 rounded-full hover:bg-white/30 transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-white/90 mb-6 text-lg">
+              Peça o código aos seus pais! 🔑
+            </p>
+
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-4">
+              <input
+                type="text"
+                value={familyCode}
+                onChange={(e) => setFamilyCode(e.target.value.toUpperCase())}
+                maxLength={6}
+                placeholder="ABC123"
+                className="w-full bg-white/30 border-2 border-white/40 rounded-xl px-4 py-3 text-white text-center text-3xl font-bold placeholder:text-white/40 focus:outline-none focus:ring-4 focus:ring-white/50 uppercase"
+              />
+            </div>
+
+            <div className="bg-yellow-300/30 border-2 border-yellow-200/50 rounded-2xl p-4 mb-6">
+              <p className="text-white text-sm font-medium">
+                💡 Digite o código de 6 letras que seus pais te deram!
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowJoinFamilyModal(false)
+                  setFamilyCode('')
+                }}
+                className="flex-1 px-6 py-3 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-lg transition-all"
+              >
+                Voltar
+              </button>
+              <button
+                onClick={handleJoinFamily}
+                disabled={familyCode.length !== 6}
+                className="flex-1 px-6 py-3 rounded-xl bg-white hover:bg-white/90 text-purple-600 font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 disabled:hover:scale-100 shadow-lg"
+              >
+                Conectar! 🎉
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Sugerir Tarefa */}
       {showSuggestModal && (

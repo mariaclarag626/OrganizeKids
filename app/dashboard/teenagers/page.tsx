@@ -8,6 +8,7 @@ import Toast from '@/components/Toast'
 import { StorageManager } from '@/lib/storage'
 import StatsCharts from '@/components/StatsCharts'
 import { LocalAuthManager } from '@/lib/localAuth'
+import { FamilyManager } from '@/lib/familyManager'
 
 type TabType = 'tasks' | 'calendar' | 'pomodoro' | 'routines' | 'stats'
 
@@ -118,6 +119,11 @@ export default function TeenagersDashboard() {
 
   // Theme State
   const [isDarkMode, setIsDarkMode] = useState(true)
+
+  // Family Connection States
+  const [showJoinFamilyModal, setShowJoinFamilyModal] = useState(false)
+  const [familyCode, setFamilyCode] = useState('')
+  const [isConnectedToFamily, setIsConnectedToFamily] = useState(false)
 
   // Show Toast Function
   const showToast = (message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
@@ -537,6 +543,46 @@ export default function TeenagersDashboard() {
     showToast('Recompensa resetada pelos pais', 'info')
   }
 
+  // Family Connection Functions
+  const handleJoinFamily = () => {
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (!currentUser) {
+      showToast('Erro: Usuário não autenticado', 'error')
+      return
+    }
+
+    if (!familyCode.trim() || familyCode.length !== 6) {
+      showToast('Por favor, insira um código válido de 6 caracteres', 'error')
+      return
+    }
+
+    const result = FamilyManager.joinFamily(
+      familyCode.toUpperCase(),
+      currentUser.id,
+      currentUser.email,
+      currentUser.name,
+      currentUser.role
+    )
+
+    if (result.success) {
+      setIsConnectedToFamily(true)
+      setShowJoinFamilyModal(false)
+      setFamilyCode('')
+      showToast('✅ Conectado à família com sucesso!', 'success')
+    } else {
+      showToast(`❌ ${result.error}`, 'error')
+    }
+  }
+
+  // Check if user is connected to a family
+  useEffect(() => {
+    const currentUser = LocalAuthManager.getCurrentUser()
+    if (currentUser) {
+      const family = FamilyManager.getUserFamily(currentUser.id)
+      setIsConnectedToFamily(!!family)
+    }
+  }, [])
+
   const handleLogout = () => {
     LocalAuthManager.logout()
     router.push('/login')
@@ -571,6 +617,23 @@ export default function TeenagersDashboard() {
           </div>
           
           <div className="flex items-center gap-4">
+            {/* Family Connection Status */}
+            {!isConnectedToFamily && (
+              <button
+                onClick={() => setShowJoinFamilyModal(true)}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 transition-all transform hover:scale-105 flex items-center gap-2 animate-pulse"
+              >
+                <span className="text-xl">👨‍👩‍👧‍👦</span>
+                <span className="font-semibold">Conectar à Família</span>
+              </button>
+            )}
+            {isConnectedToFamily && (
+              <div className="px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/50 flex items-center gap-2">
+                <span className="text-xl">👨‍👩‍👧‍👦</span>
+                <span className="text-sm text-cyan-400 font-medium">Conectado</span>
+              </div>
+            )}
+
             {/* Pomodoro Widget */}
             <button
               onClick={() => setShowPomodoroModal(true)}
@@ -1517,6 +1580,75 @@ export default function TeenagersDashboard() {
                 className="px-6 py-3 rounded-lg bg-slate-700 hover:bg-slate-600 transition-all"
               >
                 🔄
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Join Family Modal */}
+      {showJoinFamilyModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-b from-cyan-900/95 to-blue-900/95 backdrop-blur-md rounded-3xl p-8 max-w-md w-full border border-cyan-400/30 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                <span className="text-3xl">👨‍👩‍👧‍👦</span>
+                Conectar à Família
+              </h3>
+              <button
+                onClick={() => {
+                  setShowJoinFamilyModal(false)
+                  setFamilyCode('')
+                }}
+                className="text-white/70 hover:text-white text-2xl w-10 h-10 flex items-center justify-center bg-white/10 rounded-full hover:bg-white/20 transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-white/80 mb-4">
+                Peça o código de 6 caracteres aos seus pais e digite abaixo para conectar sua conta à família.
+              </p>
+              
+              <div className="bg-black/20 rounded-xl p-4 mb-4">
+                <div className="text-white/60 text-sm mb-2">Código da Família:</div>
+                <input
+                  type="text"
+                  value={familyCode}
+                  onChange={(e) => setFamilyCode(e.target.value.toUpperCase())}
+                  maxLength={6}
+                  placeholder="ABC123"
+                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-center text-2xl font-mono font-bold placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 uppercase"
+                />
+              </div>
+
+              <div className="bg-cyan-500/10 border border-cyan-400/30 rounded-xl p-3 mb-4">
+                <div className="flex items-start gap-2">
+                  <span className="text-cyan-400 text-lg">💡</span>
+                  <div className="text-cyan-200 text-sm">
+                    <strong>Dica:</strong> O código é válido por 24 horas. Após conectar, você verá as tarefas criadas pelos seus pais!
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowJoinFamilyModal(false)
+                  setFamilyCode('')
+                }}
+                className="flex-1 px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleJoinFamily}
+                disabled={familyCode.length !== 6}
+                className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 disabled:hover:scale-100"
+              >
+                Conectar
               </button>
             </div>
           </div>
