@@ -46,7 +46,10 @@ export class LocalAuthManager {
 
   // Register new user (Sign Up)
   static registerUser(email: string, password: string, name: string, role: 'teenager' | 'parent' | 'kid'): { success: boolean; message: string; user?: LocalUser } {
+    console.log('🔐 LocalAuthManager.registerUser iniciado:', { email, name, role })
+    
     if (this.emailExists(email)) {
+      console.log('❌ Email já existe:', email)
       return { 
         success: false, 
         message: 'Este email já está cadastrado. Faça login!' 
@@ -54,6 +57,8 @@ export class LocalAuthManager {
     }
 
     const users = this.getAllUsers()
+    console.log('📋 Usuários existentes:', users.length)
+    
     const newUser: LocalUser = {
       id: Date.now().toString(),
       email,
@@ -62,12 +67,15 @@ export class LocalAuthManager {
       role,
       createdAt: new Date().toISOString()
     }
+    console.log('👤 Novo usuário criado:', newUser)
 
     users.push(newUser)
     this.saveUsers(users)
+    console.log('💾 Usuários salvos no localStorage, total:', users.length)
     
     // Fazer login automático após criar a conta
     this.setCurrentUser(newUser)
+    console.log('✅ Login automático realizado')
 
     return { 
       success: true, 
@@ -106,12 +114,21 @@ export class LocalAuthManager {
 
   // Set current user with session
   static setCurrentUser(user: LocalUser): void {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') {
+      console.log('⚠️ setCurrentUser: window is undefined')
+      return
+    }
+    console.log('📝 setCurrentUser: Salvando usuário atual:', user.email)
     const sessionData: SessionData = {
       user,
       timestamp: Date.now()
     }
     localStorage.setItem(this.CURRENT_USER_KEY, JSON.stringify(sessionData))
+    console.log('✅ setCurrentUser: Usuário salvo no localStorage com key:', this.CURRENT_USER_KEY)
+    
+    // Verificar se foi salvo
+    const saved = localStorage.getItem(this.CURRENT_USER_KEY)
+    console.log('🔍 setCurrentUser: Verificação - dados salvos:', saved ? 'SIM' : 'NÃO')
   }
 
   // Get current user (verifica expiração da sessão)

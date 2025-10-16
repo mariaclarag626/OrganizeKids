@@ -19,6 +19,7 @@ function SignUpForm() {
   const [adultProfileType, setAdultProfileType] = useState<'parent' | 'personal' | null>(null)
 
   useEffect(() => {
+    // Pegar email da URL se vier do login
     const emailParam = searchParams?.get('email')
     if (emailParam) {
       setEmail(emailParam)
@@ -79,6 +80,7 @@ function SignUpForm() {
     console.log('🔄 Iniciando cadastro...')
 
     try {
+      // Verificar se email já existe
       if (LocalAuthManager.emailExists(email)) {
         console.log('❌ Email já existe')
         setError('Este email já está cadastrado. Faça login!')
@@ -101,6 +103,7 @@ function SignUpForm() {
 
       console.log('👤 Role determinado:', role, 'para idade:', userAge, 'tipo adulto:', adultProfileType)
 
+      // Registrar usuário
       const result = LocalAuthManager.registerUser(email, password, fullName, role)
 
       console.log('📊 Resultado do registro:', result)
@@ -109,8 +112,10 @@ function SignUpForm() {
         console.log('✅ Conta criada com sucesso!')
         console.log('👤 Usuário:', result.user)
         
+        // Dar um pequeno delay para garantir que o localStorage foi salvo
         await new Promise(resolve => setTimeout(resolve, 200))
         
+        // Verificar se foi salvo no localStorage
         const savedUser = LocalAuthManager.getCurrentUser()
         console.log('💾 Usuário salvo no localStorage:', savedUser)
         
@@ -156,10 +161,9 @@ function SignUpForm() {
         ))}
       </div>
 
-      {/* Form Container */}
+      {/* Signup form */}
       <div className="relative z-10 w-full max-w-md mx-auto px-4">
         {!showAdultChoice ? (
-          /* Formulário Inicial de Signup */
           <>
             <div className="text-center mb-8">
               <h1 className="text-6xl font-bold mb-3 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -265,7 +269,7 @@ function SignUpForm() {
             </div>
           </>
         ) : (
-          /* Tela de Escolha para Adultos (18+) */
+          /* Tela de escolha para adultos (18+) */
           <div className="space-y-6">
             <div className="text-center mb-8">
               <div className="text-6xl mb-4">👋</div>
@@ -346,6 +350,28 @@ function SignUpForm() {
                 <p className="text-white/60 mt-2">Criando sua conta...</p>
               </div>
             )}
+          </div>
+        )}
+      </div>
+
+          <input
+            type="text"
+            placeholder="Nome Completo"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            className="w-full px-4 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition-all"
+            required
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-400/50 transition-all"
+            required
+          />
+
           </div>
         )}
       </div>
