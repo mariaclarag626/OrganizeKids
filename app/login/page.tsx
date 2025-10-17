@@ -108,7 +108,7 @@ export default function LoginPage() {
         <div className="flex-1 flex items-end justify-start p-12 pb-32">
           <div className="max-w-lg">
             <h1 className="text-5xl font-bold text-white leading-tight tracking-tight">
-              SIGN IN TO HAVE YOUR
+              LOGIN TO HAVE YOUR
               <br />
               <span className="text-white">
                 GOALS ACHIEVED DAILY!
@@ -122,8 +122,8 @@ export default function LoginPage() {
           <div className="w-full max-w-sm">
             {/* Card do Formulário */}
             <div className="bg-black/20 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
-              <h2 className="text-4xl font-bold text-white mb-2 tracking-wide">SIGN IN</h2>
-              <p className="text-white/70 mb-8 text-sm">Sign in with email address</p>
+              <h2 className="text-4xl font-bold text-white mb-2 tracking-wide">LOGIN</h2>
+              <p className="text-white/70 mb-8 text-sm">Login with email address</p>
 
               {error && (
                 <div className="mb-4 p-3 rounded-xl bg-red-500/20 border border-red-500/50">

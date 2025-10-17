@@ -25,12 +25,12 @@ function seedTestData() {
 
   // 1. Criar PAI
   console.log('👨 Criando pai...')
-  const parent = LocalAuthManager.register({
-    name: 'João Silva',
-    email: 'joao@test.com',
-    password: '123456',
-    role: 'parent'
-  })
+  const parent = LocalAuthManager.registerUser(
+    'joao@test.com',
+    '123456',
+    'João Silva',
+    'parent'
+  )
   
   if (!parent.success || !parent.user) {
     console.error('❌ Erro ao criar pai:', parent.message)
@@ -46,12 +46,12 @@ function seedTestData() {
 
   // 2. Criar ADOLESCENTE
   console.log('👧 Criando adolescente...')
-  const teenager = LocalAuthManager.register({
-    name: 'Maria Silva',
-    email: 'maria@test.com',
-    password: '123456',
-    role: 'teenager'
-  })
+  const teenager = LocalAuthManager.registerUser(
+    'maria@test.com',
+    '123456',
+    'Maria Silva',
+    'teenager'
+  )
   
   if (!teenager.success || !teenager.user) {
     console.error('❌ Erro ao criar adolescente:', teenager.message)
@@ -78,12 +78,12 @@ function seedTestData() {
 
   // 3. Criar CRIANÇA
   console.log('👦 Criando criança...')
-  const kid = LocalAuthManager.register({
-    name: 'Pedro Silva',
-    email: 'pedro@test.com',
-    password: '123456',
-    role: 'kid'
-  })
+  const kid = LocalAuthManager.registerUser(
+    'pedro@test.com',
+    '123456',
+    'Pedro Silva',
+    'kid'
+  )
   
   if (!kid.success || !kid.user) {
     console.error('❌ Erro ao criar criança:', kid.message)
