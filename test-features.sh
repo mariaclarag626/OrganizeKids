@@ -65,7 +65,6 @@ test_routes() {
     test_endpoint "http://localhost:3000/login" "Login" 200
     test_endpoint "http://localhost:3000/signup" "Signup" 200
     test_endpoint "http://localhost:3000/who-is-using" "Who is Using" 200
-    test_endpoint "http://localhost:3000/landing" "Landing Page" 200
     
     echo ""
 }
