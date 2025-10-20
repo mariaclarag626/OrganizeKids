@@ -136,27 +136,16 @@ function SignUpForm() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900">
-      {/* Background base com gradiente espacial */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-950/95 to-purple-950/90"></div>
-      
-      {/* Camada 1: Gradiente roxo-magenta (inspirado na space background) */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-purple-900/60 via-fuchsia-900/40 to-transparent"></div>
-      
-      {/* Camada 2: Gradiente azul-cyan (tons da nebulosa) */}
-      <div className="absolute inset-0 bg-gradient-to-bl from-transparent via-blue-900/30 to-cyan-900/25"></div>
-      
-      {/* Camada 3: Gradiente diagonal com cores vibrantes */}
-      <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/40 via-transparent to-purple-800/50"></div>
-      
-      {/* Camada 4: Gradiente central com magenta/rosa */}
-      <div className="absolute inset-0 bg-radial-gradient from-transparent via-fuchsia-800/20 to-transparent opacity-60"></div>
-      
-      {/* Camada 5: Efeito de brilho sutil */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-purple-900/40"></div>
-      
-      {/* Camada 6: Adição de tons cyan-azuis nas bordas */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-transparent to-indigo-800/30"></div>
+    <div className="min-h-screen relative overflow-hidden" style={{
+      background: `linear-gradient(135deg, 
+        #250e2c 0%, 
+        #837ab6 25%, 
+        #9d85b6 40%, 
+        #cc8db3 60%, 
+        #f6a5c0 80%, 
+        #f7c2ca 100%
+      )`
+    }}>
 
       {/* Estrelas simples e sutis - mesma quantidade do login */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -306,7 +295,7 @@ function SignUpForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-purple-600 via-purple-500 to-cyan-500 hover:from-purple-700 hover:via-purple-600 hover:to-cyan-600 text-white font-semibold rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                className="w-full py-4 bg-gradient-to-r from-[#cc8db3] via-[#837ab6] to-[#250e2c] hover:from-[#cc8db3] hover:via-[#837ab6] hover:to-[#2b1035] text-white font-semibold rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-pulse"></div>
                 {loading ? (

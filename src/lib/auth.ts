@@ -2,8 +2,22 @@
 import NextAuth from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import FacebookProvider from 'next-auth/providers/facebook'
+import { DrizzleAdapter } from '@auth/drizzle-adapter'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
+
+// Opcional: conecta ao banco somente se DATABASE_URL existir
+const databaseUrl = process.env.DATABASE_URL
+const sql = databaseUrl
+  ? postgres(databaseUrl, {
+      ssl: 'require',
+    })
+  : undefined
+const db = sql ? drizzle(sql) : undefined
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // Persistência com Drizzle Adapter quando DATABASE_URL estiver configurado
+  adapter: db ? (DrizzleAdapter(db) as any) : undefined,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
@@ -24,6 +38,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: '/login',
   },
+  // Em desenvolvimento, ajuda a registrar erros no console
+  debug: process.env.NODE_ENV !== 'production',
+  // Permite inferir host correto em proxies/localhost variando de porta
+  trustHost: true,
   callbacks: {
     async signIn({ user }) {
       // Apenas retornar true - o localStorage será gerenciado no cliente
