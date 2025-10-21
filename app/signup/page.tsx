@@ -139,17 +139,20 @@ function SignUpForm() {
     <div className="min-h-screen relative overflow-hidden" style={{
       background: `linear-gradient(135deg, 
         #250e2c 0%, 
-        #837ab6 25%, 
-        #9d85b6 40%, 
-        #cc8db3 60%, 
-        #f6a5c0 80%, 
-        #f7c2ca 100%
+        #837ab6 15%, 
+        #9d85b6 30%, 
+        #cc8db3 45%, 
+        #f6a5c0 60%, 
+        #f7c2ca 75%, 
+        #FEA98E 85%, 
+        #FEBB8E 90%, 
+        #FFD99E 100%
       )`
     }}>
 
-      {/* Estrelas simples e sutis - mesma quantidade do login */}
+      {/* Estrelas simples e sutis - aumentada a quantidade */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 15 }).map((_, i) => (
+        {Array.from({ length: 35 }).map((_, i) => (
           <div
             key={i}
             className="absolute bg-white rounded-full animate-pulse"
@@ -160,15 +163,15 @@ function SignUpForm() {
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 3}s`,
               animationDuration: `${3 + Math.random() * 2}s`,
-              opacity: 0.6
+              opacity: 0.4 + Math.random() * 0.4
             }}
           />
         ))}
       </div>
 
-      {/* Algumas estrelas maiores e mais brilhantes para efeito */}
+      {/* Estrelas maiores e mais brilhantes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 5 }).map((_, i) => (
+        {Array.from({ length: 15 }).map((_, i) => (
           <div
             key={`bright-${i}`}
             className="absolute bg-white rounded-full animate-pulse"
@@ -179,8 +182,89 @@ function SignUpForm() {
               top: `${Math.random() * 100}%`,
               animationDelay: `${Math.random() * 4}s`,
               animationDuration: `${4 + Math.random() * 3}s`,
+              opacity: 0.6 + Math.random() * 0.3,
+              boxShadow: '0 0 6px rgba(255,255,255,0.8)',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Pontinhos brilhantes médios com efeito twinkle */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div
+            key={`medium-${i}`}
+            className="absolute bg-gradient-to-r from-white to-yellow-200 rounded-full animate-bounce"
+            style={{
+              width: '3px',
+              height: '3px',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${5 + Math.random() * 4}s`,
+              opacity: 0.7,
+              boxShadow: '0 0 8px rgba(255,255,200,0.6), 0 0 12px rgba(255,255,255,0.4)',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Estrelas grandes com efeito especial */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div
+            key={`star-${i}`}
+            className="absolute text-white animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 6}s`,
+              animationDuration: `${6 + Math.random() * 3}s`,
+              fontSize: '8px',
+              opacity: 0.6 + Math.random() * 0.3,
+              textShadow: '0 0 10px rgba(255,255,255,0.8)',
+              transform: `rotate(${Math.random() * 360}deg)`
+            }}
+          >
+            ✦
+          </div>
+        ))}
+      </div>
+
+      {/* Pontinhos muito pequenos com movimento sutil */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 50 }).map((_, i) => (
+          <div
+            key={`tiny-${i}`}
+            className="absolute bg-white rounded-full"
+            style={{
+              width: '0.5px',
+              height: '0.5px',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              opacity: 0.3 + Math.random() * 0.3,
+              animation: `twinkle ${3 + Math.random() * 4}s infinite ${Math.random() * 2}s`,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Estrelas coloridas com gradiente */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div
+            key={`colored-${i}`}
+            className="absolute rounded-full animate-pulse"
+            style={{
+              width: '4px',
+              height: '4px',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              background: `radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(${255 - i * 20},${200 + i * 5},255,0.6) 100%)`,
+              animationDelay: `${Math.random() * 7}s`,
+              animationDuration: `${7 + Math.random() * 3}s`,
               opacity: 0.8,
-              boxShadow: '0 0 4px rgba(255,255,255,0.6)',
+              boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 0 25px rgba(255,200,255,0.3)',
             }}
           />
         ))}
@@ -295,7 +379,7 @@ function SignUpForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-[#cc8db3] via-[#837ab6] to-[#250e2c] hover:from-[#cc8db3] hover:via-[#837ab6] hover:to-[#2b1035] text-white font-semibold rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                className="w-full py-4 bg-[#837ab6] hover:bg-[#7a70aa] text-white font-semibold rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-pulse"></div>
                 {loading ? (
@@ -436,8 +520,30 @@ function SignUpForm() {
 
       <style jsx>{`
         @keyframes twinkle {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
+          0%, 100% { opacity: 0.2; transform: scale(0.8); }
+          25% { opacity: 0.8; transform: scale(1.1); }
+          50% { opacity: 1; transform: scale(1.2); }
+          75% { opacity: 0.6; transform: scale(1); }
+        }
+        
+        @keyframes sparkle {
+          0% { opacity: 0; transform: scale(0) rotate(0deg); }
+          50% { opacity: 1; transform: scale(1) rotate(180deg); }
+          100% { opacity: 0; transform: scale(0) rotate(360deg); }
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes glow {
+          0%, 100% { 
+            box-shadow: 0 0 5px rgba(255,255,255,0.5), 0 0 10px rgba(255,255,255,0.3), 0 0 15px rgba(255,255,255,0.1); 
+          }
+          50% { 
+            box-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.4); 
+          }
         }
         
         .bg-radial-gradient {
