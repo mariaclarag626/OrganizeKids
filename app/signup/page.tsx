@@ -144,7 +144,7 @@ function SignUpForm() {
         #cc8db3 45%, 
         #f6a5c0 60%, 
         #f7c2ca 75%, 
-        #FEA98E 85%, 
+        #FEA98E 82%, 
         #FEBB8E 90%, 
         #FFD99E 100%
       )`

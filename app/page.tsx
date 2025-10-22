@@ -34,7 +34,15 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-x-hidden">
+    <div className="min-h-screen relative overflow-x-hidden" style={{
+      background: `linear-gradient(135deg, 
+        #250e2c 0%, 
+        #837ab6 25%, 
+        #cc8db3 50%, 
+        #f6a5c0 75%, 
+        #FFD99E 100%
+      )`
+    }}>
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Floating orbs */}
@@ -87,7 +95,7 @@ export default function HomePage() {
         <nav className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-xl">O</span>
             </div>
             <span className="text-white font-bold text-2xl" style={{ fontFamily: 'Poppins' }}>
@@ -117,7 +125,7 @@ export default function HomePage() {
           {/* CTA Button */}
           <div className="hidden lg:block">
             <button 
-              className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg"
+              className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg"
               onClick={() => window.location.href = '/login'}
             >
               Começar Grátis
@@ -145,7 +153,7 @@ export default function HomePage() {
               <a href="#sobre" className="text-white/80 hover:text-white transition-colors">Sobre Nós</a>
               <a href="#contato" className="text-white/80 hover:text-white transition-colors">Contato</a>
               <button 
-                className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-xl font-semibold mt-4"
+                className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl font-semibold mt-4"
                 onClick={() => window.location.href = '/login'}
               >
                 Começar Grátis
@@ -163,11 +171,11 @@ export default function HomePage() {
             style={{ fontFamily: 'Poppins' }}
           >
             Organize a rotina da sua família de forma{' '}
-            <span className="bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-purple-600 to-pink-400 bg-clip-text text-transparent">
               simples
             </span>{' '}
             e{' '}
-            <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-pink-400 to-orange-400 bg-clip-text text-transparent">
               divertida
             </span>
           </h1>
@@ -179,7 +187,7 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
             <button 
-              className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-purple-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-xl min-w-[200px]"
+              className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-purple-700 hover:to-pink-600 transition-all transform hover:scale-105 shadow-xl min-w-[200px]"
               onClick={() => window.location.href = '/login'}
             >
               Começar Agora
@@ -320,7 +328,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
             <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mb-6 mx-auto">
+              <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-pink-500 rounded-full flex items-center justify-center mb-6 mx-auto">
                 <span className="text-3xl">🎮</span>
               </div>
               <h3 className="text-xl font-bold text-white mb-4">Experiência Gamificada</h3>
@@ -402,8 +410,8 @@ export default function HomePage() {
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <button 
-                className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-10 py-5 rounded-xl font-bold text-xl hover:from-purple-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-xl min-w-[250px]"
-                onClick={() => window.location.href = '/login'}
+                className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-10 py-5 rounded-xl font-bold text-xl hover:from-purple-700 hover:to-pink-600 transition-all transform hover:scale-105 shadow-xl min-w-[250px]"
+                onClick={() => window.location.href = '/signup'}
               >
                 Começar Agora
               </button>
@@ -425,7 +433,7 @@ export default function HomePage() {
             {/* Logo and description */}
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-xl">O</span>
                 </div>
                 <span className="text-white font-bold text-2xl" style={{ fontFamily: 'Poppins' }}>
