@@ -4,6 +4,10 @@ const withNextIntl = createNextIntlPlugin()
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    // Avoid blocking builds due to ESLint config issues in CI or fresh environments
+    ignoreDuringBuilds: true,
+  },
   experimental: {
     serverComponentsExternalPackages: ['postgres'],
   },

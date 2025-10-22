@@ -216,16 +216,27 @@ export class TaskManager {
   static getChildStats(childId: string): {
     totalPoints: number
     tasksCompleted: number
+    tasksCompleted7d: number
+    tasksCompleted30d: number
     tasksApproved: number
     tasksPending: number
     tasksAwaitingApproval: number
   } {
     const tasks = this.getChildTasks(childId)
     const completions = this.getAllCompletions().filter(c => c.childId === childId)
+    const now = Date.now()
+    const DAY = 24 * 60 * 60 * 1000
+    const inLastNDays = (iso: string | undefined, days: number) => {
+      if (!iso) return false
+      const t = new Date(iso).getTime()
+      return now - t <= days * DAY
+    }
 
     return {
       totalPoints: completions.reduce((total, c) => total + c.pointsEarned, 0),
       tasksCompleted: completions.length,
+      tasksCompleted7d: completions.filter(c => inLastNDays(c.completedAt, 7)).length,
+      tasksCompleted30d: completions.filter(c => inLastNDays(c.completedAt, 30)).length,
       tasksApproved: tasks.filter(t => t.status === 'approved').length,
       tasksPending: tasks.filter(t => t.status === 'pending').length,
       tasksAwaitingApproval: tasks.filter(t => t.status === 'completed').length
