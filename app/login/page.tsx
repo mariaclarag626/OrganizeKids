@@ -83,7 +83,7 @@ export default function LoginPage() {
       )`
     }}>
       {/* Canvas background: stars + gentle meteors on auth pages */}
-  <ShootingStarsBackground className="absolute inset-0" meteors={true} maxFps={60} starCount={460} />
+  <ShootingStarsBackground className="absolute inset-0" meteors={true} meteorRate={1.2} maxFps={60} starCount={460} />
 
       <div className="relative z-10 flex min-h-screen items-center flex-col lg:flex-row w-full max-w-6xl mx-auto px-4 gap-8">
         {/* Lado Esquerdo - Texto Motivacional (mais estreito e centralizado verticalmente) */}

@@ -39,7 +39,7 @@ function SignUpForm() {
   const handleAdultChoice = async (choice: 'parent' | 'personal') => {
     setAdultProfileType(choice)
     const userAge = parseInt(age)
-    await createAccount(userAge)
+    await createAccount(userAge, choice)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,7 +75,7 @@ function SignUpForm() {
     await createAccount(userAge)
   }
 
-  const createAccount = async (userAge: number) => {
+  const createAccount = async (userAge: number, choiceOverride?: 'parent' | 'personal') => {
     setLoading(true)
     console.log('🔄 Iniciando cadastro...')
 
@@ -96,11 +96,12 @@ function SignUpForm() {
       if (userAge < 13) {
         role = 'kid'
       } else if (userAge >= 18) {
-        // Para adultos, usar a escolha feita na tela intermediária
-        role = adultProfileType === 'personal' ? 'teenager' : 'parent'
+        // Para adultos, usar a escolha feita na tela intermediária (usar o override se fornecido)
+        const choice = choiceOverride || adultProfileType
+        role = choice === 'personal' ? 'teenager' : 'parent'
       }
 
-      console.log('👤 Role determinado:', role, 'para idade:', userAge, 'tipo adulto:', adultProfileType)
+      console.log('👤 Role determinado:', role, 'para idade:', userAge, 'tipo adulto:', choiceOverride || adultProfileType)
 
       const result = LocalAuthManager.registerUser(email, password, fullName, role)
 
@@ -118,7 +119,8 @@ function SignUpForm() {
         if (savedUser) {
           console.log('🔄 Redirecionando para who-is-using...')
           setLoading(false)
-          router.push('/who-is-using')
+          const target = LocalAuthManager.getDashboardRoute(savedUser.role)
+          router.push(target)
         } else {
           console.error('❌ Erro: Usuário não foi salvo no localStorage!')
           setError('Erro ao salvar dados. Tente novamente.')
@@ -151,7 +153,7 @@ function SignUpForm() {
       )`
     }}>
   {/* Canvas background: stars + gentle meteors on auth pages */}
-  <ShootingStarsBackground className="absolute inset-0" meteors={true} maxFps={60} starCount={480} />
+  <ShootingStarsBackground className="absolute inset-0" meteors={true} meteorRate={1.2} maxFps={60} starCount={480} />
 
       {/* Container principal centralizado */}
       <div className="relative z-10 flex min-h-screen items-center justify-center py-8 px-4">

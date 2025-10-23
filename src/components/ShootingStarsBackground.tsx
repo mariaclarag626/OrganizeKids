@@ -11,6 +11,8 @@ export type ShootingStarsBackgroundProps = {
   starCount?: number
   // Enable/disable meteors (shooting stars)
   meteors?: boolean
+  // Frequency multiplier for meteors. 1 = default, >1 = more frequent, <1 = fewer
+  meteorRate?: number
   // Cap frames-per-second to save battery/CPU
   maxFps?: number
   // Subtle mouse-based parallax strength in CSS pixels
@@ -73,6 +75,7 @@ export default function ShootingStarsBackground({
   ariaLabel = 'Animated starry sky background',
   starCount = 450,
   meteors = true,
+  meteorRate = 1,
   maxFps = 60,
   parallaxStrength = 0.02,
 }: ShootingStarsBackgroundProps) {
@@ -307,9 +310,10 @@ export default function ShootingStarsBackground({
 
   function updateMeteors(deltaMs: number, w: number, h: number) {
     const now = performance.now()
+    const rate = Math.max(0.25, Number.isFinite(meteorRate) ? meteorRate : 1)
     if (nextSpawnAtRef.current === 0) {
       // Slightly sooner first meteor
-      nextSpawnAtRef.current = now + rand(3000, 5000)
+      nextSpawnAtRef.current = now + rand(3000, 5000) / rate
     }
 
     // Poisson-like spawning: occasionally spawn bursts of 1-3
@@ -319,7 +323,7 @@ export default function ShootingStarsBackground({
         meteorsRef.current.push(spawnMeteor(w, h))
       }
       // Reduce time between bursts a bit
-      nextSpawnAtRef.current = now + rand(6500, 10000)
+      nextSpawnAtRef.current = now + rand(6500, 10000) / rate
     }
 
     // Update motion with a tiny curvature (gravity-like)

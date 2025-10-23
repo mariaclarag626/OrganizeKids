@@ -697,9 +697,20 @@ export default function ParentsDashboard() {
   })
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden'>
+    <div className='min-h-screen relative overflow-hidden' style={{
+      background: `linear-gradient(160deg, 
+        #250e2c 0%, 
+        #6b4d7a 20%, 
+        #837ab6 35%, 
+        #9d85b6 50%, 
+        #cc8db3 65%, 
+        #e5a0b8 80%, 
+        #f6c7c0 90%, 
+        #FFD99E 100%
+      )`
+    }}>
       {/* Animated stars background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
         {Array.from({ length: 50 }).map((_, i) => (
           <div
             key={i}
