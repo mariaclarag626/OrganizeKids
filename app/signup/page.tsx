@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { LocalAuthManager } from '@/lib/localAuth'
 import { signIn } from 'next-auth/react'
+import ShootingStarsBackground from '@/components/ShootingStarsBackground'
 
 function SignUpForm() {
   const router = useRouter()
@@ -149,126 +150,8 @@ function SignUpForm() {
         #FFD99E 100%
       )`
     }}>
-
-      {/* Estrelas simples e sutis - aumentada a quantidade */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 35 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute bg-white rounded-full animate-pulse"
-            style={{
-              width: '1px',
-              height: '1px',
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${3 + Math.random() * 2}s`,
-              opacity: 0.4 + Math.random() * 0.4
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Estrelas maiores e mais brilhantes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 15 }).map((_, i) => (
-          <div
-            key={`bright-${i}`}
-            className="absolute bg-white rounded-full animate-pulse"
-            style={{
-              width: '2px',
-              height: '2px',
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 4}s`,
-              animationDuration: `${4 + Math.random() * 3}s`,
-              opacity: 0.6 + Math.random() * 0.3,
-              boxShadow: '0 0 6px rgba(255,255,255,0.8)',
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Pontinhos brilhantes médios com efeito twinkle */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 20 }).map((_, i) => (
-          <div
-            key={`medium-${i}`}
-            className="absolute bg-gradient-to-r from-white to-yellow-200 rounded-full animate-bounce"
-            style={{
-              width: '3px',
-              height: '3px',
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${5 + Math.random() * 4}s`,
-              opacity: 0.7,
-              boxShadow: '0 0 8px rgba(255,255,200,0.6), 0 0 12px rgba(255,255,255,0.4)',
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Estrelas grandes com efeito especial */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={`star-${i}`}
-            className="absolute text-white animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 6}s`,
-              animationDuration: `${6 + Math.random() * 3}s`,
-              fontSize: '8px',
-              opacity: 0.6 + Math.random() * 0.3,
-              textShadow: '0 0 10px rgba(255,255,255,0.8)',
-              transform: `rotate(${Math.random() * 360}deg)`
-            }}
-          >
-            ✦
-          </div>
-        ))}
-      </div>
-
-      {/* Pontinhos muito pequenos com movimento sutil */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 50 }).map((_, i) => (
-          <div
-            key={`tiny-${i}`}
-            className="absolute bg-white rounded-full"
-            style={{
-              width: '0.5px',
-              height: '0.5px',
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              opacity: 0.3 + Math.random() * 0.3,
-              animation: `twinkle ${3 + Math.random() * 4}s infinite ${Math.random() * 2}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Estrelas coloridas com gradiente */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 10 }).map((_, i) => (
-          <div
-            key={`colored-${i}`}
-            className="absolute rounded-full animate-pulse"
-            style={{
-              width: '4px',
-              height: '4px',
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              background: `radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(${255 - i * 20},${200 + i * 5},255,0.6) 100%)`,
-              animationDelay: `${Math.random() * 7}s`,
-              animationDuration: `${7 + Math.random() * 3}s`,
-              opacity: 0.8,
-              boxShadow: '0 0 15px rgba(255,255,255,0.5), 0 0 25px rgba(255,200,255,0.3)',
-            }}
-          />
-        ))}
-      </div>
+  {/* Canvas background: stars + gentle meteors on auth pages */}
+  <ShootingStarsBackground className="absolute inset-0" meteors={true} maxFps={60} starCount={480} />
 
       {/* Container principal centralizado */}
       <div className="relative z-10 flex min-h-screen items-center justify-center py-8 px-4">

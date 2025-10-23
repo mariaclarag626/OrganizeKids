@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { LocalAuthManager } from '@/lib/localAuth'
 
@@ -94,14 +95,19 @@ export default function HomePage() {
       <header className="relative z-10 container mx-auto px-4 py-6">
         <nav className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">O</span>
-            </div>
-            <span className="text-white font-bold text-2xl" style={{ fontFamily: 'Poppins' }}>
+          <a href="/" className="flex items-center space-x-2 group" aria-label="OrganizeKids - Página inicial">
+            <Image
+              src="/logo-organizekids.svg"
+              alt="Logo OrganizeKids"
+              width={40}
+              height={40}
+              priority
+              className="drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)] transition-transform group-hover:scale-105"
+            />
+            <span className="text-white font-bold text-2xl tracking-tight" style={{ fontFamily: 'Poppins' }}>
               OrganizeKids
             </span>
-          </div>
+          </a>
 
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center space-x-8">
@@ -433,9 +439,13 @@ export default function HomePage() {
             {/* Logo and description */}
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-500 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">O</span>
-                </div>
+                <Image
+                  src="/logo-organizekids.svg"
+                  alt="Logo OrganizeKids"
+                  width={40}
+                  height={40}
+                  className="drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)]"
+                />
                 <span className="text-white font-bold text-2xl" style={{ fontFamily: 'Poppins' }}>
                   OrganizeKids
                 </span>

@@ -1,11 +1,24 @@
+# Styling backup: Space background for /login
+
+Este arquivo é um backup do styling da página de login (http://localhost:3000/login), incluindo o componente com classes Tailwind e os trechos de CSS globais relacionados ao fundo espacial e animações. Use-o para restaurar facilmente o visual caso faça modificações futuras.
+
+- Página fonte: `app/login/page.tsx`
+- CSS global relacionado: `app/globals.css` (seções de fundo espacial e animações)
+- Asset: `public/space-background-new.png`
+
+---
+
+## Componente de Login (com estilos)
+
+```tsx
+// app/login/page.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { LocalAuthManager } from '@/lib/localAuth'
 import { signIn } from 'next-auth/react'
-// Image removed; background will use gradient like /signup
-import ShootingStarsBackground from '@/components/ShootingStarsBackground'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -38,23 +51,13 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      // Usar LocalAuthManager para validar
       const result = LocalAuthManager.login(email, password)
 
       if (result.success && result.user) {
-        console.log('✅ Login bem-sucedido!')
-        console.log('📧 Email:', email)
-        console.log('👤 User data:', result.user)
-        
-        // Redirecionar DIRETO para o dashboard específico (pula who-is-using)
         const dashboardRoute = LocalAuthManager.getDashboardRoute(result.user.role)
-        console.log('🔄 Redirecionando para:', dashboardRoute)
         router.push(dashboardRoute)
       } else {
-        console.log('❌ Login falhou:', result.message)
         setError(result.message)
-        
-        // Se email não existe, redirecionar para signup
         if (result.message.includes('não encontrado')) {
           setTimeout(() => {
             router.push('/signup?email=' + encodeURIComponent(email))
@@ -69,25 +72,44 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{
-      background: `linear-gradient(135deg, 
-        #250e2c 0%, 
-        #837ab6 15%, 
-        #9d85b6 30%, 
-        #cc8db3 45%, 
-        #f6a5c0 60%, 
-        #f7c2ca 75%, 
-        #FEA98E 82%, 
-        #FEBB8E 90%, 
-        #FFD99E 100%
-      )`
-    }}>
-      {/* Canvas background: stars + gentle meteors on auth pages */}
-  <ShootingStarsBackground className="absolute inset-0" meteors={true} maxFps={60} starCount={460} />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background Espacial */}
+      <div className="absolute inset-0">
+        <Image
+          src="/space-background-new.png"
+          alt="Space Background"
+          fill
+          className="object-cover"
+          priority
+        />
+        {/* Overlay escuro para melhor legibilidade */}
+        <div className="absolute inset-0 bg-black/10"></div>
+        {/* Gradiente roxo no lado direito */}
+        <div className="absolute inset-0 bg-gradient-to-l from-[#160430]/60 via-[#160430]/20 to-transparent"></div>
+      </div>
 
-      <div className="relative z-10 flex min-h-screen items-center flex-col lg:flex-row w-full max-w-6xl mx-auto px-4 gap-8">
-        {/* Lado Esquerdo - Texto Motivacional (mais estreito e centralizado verticalmente) */}
-        <div className="flex-1 lg:basis-2/5 flex items-center justify-start p-8">
+      {/* Estrelas simples e sutis */}
+      <div className="absolute inset-0">
+        {[...Array(15)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute bg-white rounded-full animate-pulse"
+            style={{
+              width: '1px',
+              height: '1px',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${3 + Math.random() * 2}s`,
+              opacity: 0.6
+            }}
+          />
+        ))}
+      </div>
+
+      <div className="relative z-10 flex min-h-screen">
+        {/* Lado Esquerdo - Texto Motivacional */}
+        <div className="flex-1 flex items-end justify-start p-12 pb-32">
           <div className="max-w-lg">
             <h1 className="text-5xl font-bold text-white leading-tight tracking-tight">
               LOGIN TO HAVE YOUR
@@ -99,8 +121,8 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Lado Direito - Formulário de Login (card centralizado) */}
-        <div className="flex-1 lg:basis-3/5 flex items-center justify-center p-8">
+        {/* Lado Direito - Formulário de Login */}
+        <div className="flex-1 flex items-center justify-center p-8">
           <div className="w-full max-w-sm">
             {/* Card do Formulário */}
             <div className="bg-black/20 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
@@ -156,7 +178,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 bg-[#837ab6] hover:bg-[#7a70aa] text-white font-semibold rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                  className="w-full py-4 bg-gradient-to-r from-purple-600 via-purple-500 to-cyan-500 hover:from-purple-700 hover:via-purple-600 hover:to-cyan-600 text-white font-semibold rounded-2xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-xl hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-pulse"></div>
                   {loading ? (
@@ -228,3 +250,86 @@ export default function LoginPage() {
     </div>
   )
 }
+```
+
+---
+
+## CSS global relevante (fundo espacial e animações)
+
+```css
+/* app/globals.css — seções relevantes */
+
+/* Custom background class */
+.space-background {
+  background-image: url('/space-background-new.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Space theme specific styles */
+.space-background {
+  background: linear-gradient(
+    135deg,
+    #1a0b3d 0%,
+    #4c1d95 25%,
+    #1e40af 50%,
+    #0891b2 75%,
+    #0d9488 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.space-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, #ffffff, transparent),
+    radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(2px 2px at 160px 30px, rgba(255, 255, 255, 0.7), transparent);
+  background-repeat: repeat;
+  background-size: 200px 100px;
+  animation: floating 20s linear infinite;
+}
+
+/* Animações utilitárias (podem ser usadas pelas estrelas/elementos) */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-10px) rotate(120deg); }
+  66% { transform: translateY(5px) rotate(240deg); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes shootingStar {
+  0% { transform: translateX(-100px) translateY(0) rotate(-15deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100vw) translateY(-200px) rotate(-15deg); opacity: 0; }
+}
+```
+
+---
+
+## Observações
+
+- A página usa Tailwind CSS extensivamente; o visual é definido via `className` diretamente no JSX. O backup acima contém todas as classes usadas.
+- O fundo espacial é construído por:
+  - `Image` cobrindo a viewport com `object-cover` usando `/space-background-new.png`.
+  - Overlay `bg-black/10` para contraste.
+  - Gradiente lateral: `bg-gradient-to-l from-[#160430]/60 via-[#160430]/20 to-transparent`.
+  - Pequenas "estrelas" criadas com `div` posicionadas absolutamente com `animate-pulse` (Tailwind) e estilos inline.
+- Se você alterar cores/gradientes e quiser reverter, basta copiar o trecho correspondente deste arquivo de volta para `app/login/page.tsx` ou `app/globals.css`.
